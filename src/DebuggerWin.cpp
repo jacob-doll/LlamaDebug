@@ -7,9 +7,9 @@
 
 namespace LlamaDebug 
 {
-
 class EventCallbacks : public DebugBaseEventCallbacks 
 {
+public:
     STDMETHOD_(ULONG, AddRef)(
         THIS
         )
@@ -102,40 +102,102 @@ class EventCallbacks : public DebugBaseEventCallbacks
     }
 };
 
+class OutputCallbacks : public IDebugOutputCallbacks
+{
+public:
+    OutputCallbacks(Debugger* debugger) : m_debugger(debugger) {}
+
+    STDMETHOD(QueryInterface)(
+        THIS_
+        _In_ REFIID InterfaceId,
+        _Out_ PVOID* Interface
+        )
+    {
+        *Interface = NULL;
+
+        if (IsEqualIID(InterfaceId, __uuidof(IUnknown)) ||
+            IsEqualIID(InterfaceId, __uuidof(IDebugOutputCallbacks)))
+        {
+            *Interface = (IDebugOutputCallbacks *)this;
+            AddRef();
+            return S_OK;
+        }
+        else
+        {
+            return E_NOINTERFACE;
+        }
+    }
+
+    STDMETHOD_(ULONG, AddRef)(
+        THIS
+        )
+    {
+        return 1;
+    }
+
+    STDMETHOD_(ULONG, Release)(
+        THIS
+        )
+    {
+        return 0;
+    }
+
+    STDMETHOD(Output)(
+        THIS_
+        IN ULONG Mask,
+        IN PCSTR Text
+        )
+    {
+        if (m_debugger->getOutputCallback())
+        {
+            m_debugger->getOutputCallback()(Text);
+        }
+        return S_OK;
+    }
+
+    Debugger *m_debugger;
+};
+
 class Debugger::Impl
 {
 public:
-    Impl() {}
+    Impl(Debugger* debugger) : 
+        m_debugger(debugger),
+        m_outputCallbacks(debugger) {}
     ~Impl() {}
 
-    bool create_interfaces()
+    bool createInterfaces()
     {
-        HRESULT status;
-        if ((status = DebugCreate(__uuidof(IDebugClient), 
-                                (void**)&m_client)) != S_OK) 
+        if (DebugCreate(__uuidof(IDebugClient), 
+                                (void**)&m_client) != S_OK) 
         {
             goto fail;
         }
 
-        if ((status = m_client->QueryInterface(__uuidof(IDebugControl), 
-                                            (void**)&m_control)) != S_OK) 
+        if (m_client->QueryInterface(__uuidof(IDebugControl), 
+                                            (void**)&m_control) != S_OK) 
         {
             goto fail;
         }
 
-        if ((status = m_client->QueryInterface(__uuidof(IDebugDataSpaces), 
-                                            (void**)&m_data_spaces)) != S_OK) 
+        if (m_client->QueryInterface(__uuidof(IDebugDataSpaces), 
+                                            (void**)&m_dataSpaces) != S_OK) 
         {
             goto fail;
         }
 
-        if ((status = m_client->QueryInterface(__uuidof(IDebugRegisters), 
-                                            (void**)&m_registers)) != S_OK) 
+        if (m_client->QueryInterface(__uuidof(IDebugRegisters), 
+                                            (void**)&m_registers) != S_OK) 
         {
             goto fail;
         }
 
-        if ((status = m_client->SetEventCallbacks(&m_event_callbacks)) != S_OK) 
+        if (m_client->SetEventCallbacks(&m_eventCallbacks) != S_OK) 
+        {
+            goto fail;
+        }
+
+        if (m_client->SetOutputCallbacks(&m_outputCallbacks) != S_OK)
         {
             goto fail;
         }
@@ -154,9 +216,9 @@ public:
             m_registers->Release();
         }
 
-        if (m_data_spaces) 
+        if (m_dataSpaces) 
         {
-            m_data_spaces->Release();
+            m_dataSpaces->Release();
         }
 
         if (m_control) 
@@ -170,7 +232,7 @@ public:
         }
     }
 
-    bool create_process(char* target) 
+    bool createProcess(char* target) 
     {
         if (m_client->CreateProcess(0, target, DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE) != S_OK) 
         {
@@ -179,7 +241,7 @@ public:
         return true;
     }
 
-    int wait_for_event() 
+    int waitForEvent() 
     {
         HRESULT status;
         while ((status = m_control->WaitForEvent(DEBUG_WAIT_DEFAULT, 
@@ -189,27 +251,39 @@ public:
             return LD_STATUS_DEAD;
         }
 
-        ULONG type, process_id, thread_id, description_used;
-        char description[256];
-        m_control->GetLastEventInformation(&type, &process_id, &thread_id, NULL, 0, NULL, description, 256, &description_used);
-        printf("type: %ul, pid: %ul, tid: %ul, desc: %.*s\n", type, process_id, thread_id, description_used, description);
-        return LD_STATUS_ERROR;
+        ULONG type, process_id, thread_id;
+        m_control->GetLastEventInformation(&type, &process_id, &thread_id, NULL, 0, NULL, NULL, 0, NULL);
+
+        int ret;
+
+        switch (type)
+        {
+        case DEBUG_EVENT_BREAKPOINT: ret = LD_STATUS_BREAKPOINT; break;
+        case DEBUG_EVENT_EXCEPTION: ret = LD_STATUS_EXCEPTION; break;
+        case DEBUG_EVENT_CREATE_PROCESS: ret = LD_STATUS_CREATE_PROCESS; break;
+        case DEBUG_EVENT_EXIT_PROCESS: ret = LD_STATUS_EXIT_PROCESS; break;
+        case DEBUG_EVENT_LOAD_MODULE: ret = LD_STATUS_LOAD_MODULE; break;
+        default: ret = LD_STATUS_ERROR;
+        }
+
+        return ret;
     }
 
-private:
+    Debugger* m_debugger;
     IDebugClient* m_client;
     IDebugControl* m_control;
-    IDebugDataSpaces* m_data_spaces;
+    IDebugDataSpaces* m_dataSpaces;
     IDebugRegisters* m_registers;
-    EventCallbacks m_event_callbacks;
+    EventCallbacks m_eventCallbacks;
+    OutputCallbacks m_outputCallbacks;
 };
 
-Debugger::Debugger() : p_impl{new Impl()} { }
+Debugger::Debugger() : p_impl{new Impl(this)} { }
 
 bool Debugger::open(char *target) 
 {
-    if (!p_impl->create_interfaces()) return false;
-    if (!p_impl->create_process(target)) return false;
+    if (!p_impl->createInterfaces()) return false;
+    if (!p_impl->createProcess(target)) return false;
     return true;
 }
 
@@ -220,7 +294,7 @@ void Debugger::close()
 
 int Debugger::wait() 
 {
-    return p_impl->wait_for_event();
+    return p_impl->waitForEvent();
 }
 
 } // namespace LlamaDebug

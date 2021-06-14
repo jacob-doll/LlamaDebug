@@ -10,6 +10,7 @@
 #define LD_STATUS_EXCEPTION 4
 #define LD_STATUS_CREATE_PROCESS 5
 #define LD_STATUS_EXIT_PROCESS 6
+#define LD_STATUS_LOAD_MODULE 7
 
 namespace LlamaDebug 
 {
@@ -17,10 +18,15 @@ namespace LlamaDebug
 class Debugger
 {
 public:
+    typedef void (*OutputCallback)(const char*);
+    
     Debugger();
 
     bool open(char* target);
     void close();
+
+    void setOutputCallback(OutputCallback output_cb) { m_outputCallback = output_cb; }
+    OutputCallback &getOutputCallback() { return m_outputCallback; }
 
     int wait();
 
@@ -49,6 +55,8 @@ public:
 private:
     class Impl;
     Impl* p_impl;
+
+    OutputCallback m_outputCallback;
 };
 
 } // namespace LlamaDebug
