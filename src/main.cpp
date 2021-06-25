@@ -32,7 +32,11 @@ int main(int argc, char **argv)
     int status;
     while ((status = debugger.wait()) != LD_STATUS_DEAD) 
     {
-        if (status = LD_STATUS_LOAD_MODULE) continue;
+        // if (status = LD_STATUS_LOAD_MODULE) continue;
+        for(LlamaDebug::Module mod : debugger.getModules())
+        {
+            printf("%s\n", mod.file.c_str());
+        }
         printf("> ");
         char buffer[512];
         fgets(buffer, 512, stdin);

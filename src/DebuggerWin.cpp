@@ -192,6 +192,12 @@ public:
             goto fail;
         }
 
+        if (m_client->QueryInterface(__uuidof(IDebugSymbols),
+                                              (void**)&m_symbols) != S_OK)
+        {
+            goto fail;
+        }
+
         if (m_client->SetEventCallbacks(&m_eventCallbacks) != S_OK) 
         {
             goto fail;
@@ -211,6 +217,11 @@ public:
     void terminate()
     {
         m_client->EndSession(DEBUG_END_PASSIVE);
+        if (m_symbols)
+        {
+            m_symbols->Release();
+        }
+
         if (m_registers) 
         {
             m_registers->Release();
@@ -269,11 +280,59 @@ public:
         return ret;
     }
 
+    ULONG getNumLoadedModules() 
+    {
+        ULONG loaded, unloaded;
+        if (m_symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
+        {
+            return 0;
+        }
+        return loaded;
+    }
+
+    std::vector<Module> getModules(ULONG numModules) 
+    {
+        std::vector<Module> ret;
+        PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[numModules];
+
+        if (m_symbols->GetModuleParameters(numModules, NULL, 0, params) != S_OK)
+        {
+            return ret;
+        }
+
+        ULONG i;
+        for (i = 0; i < numModules; i++)
+        {
+            char* modName = new char[params[i].ModuleNameSize];
+            char* imageName = new char[params[i].ImageNameSize];
+            if (m_symbols->GetModuleNames(
+                DEBUG_ANY_ID, params[i].Base, 
+                imageName, params[i].ImageNameSize, NULL,
+                modName, params[i].ModuleNameSize, NULL,
+                NULL, 0, NULL) != S_OK)
+            {
+                delete[] modName;
+                delete[] imageName;
+                break;
+            }
+            Module mod = {modName, imageName, params[i].Base, params[i].Size};
+            ret.emplace_back(mod);
+            delete[] modName;
+            delete[] imageName; 
+        }
+        delete[] params;
+        return ret;
+    }
+
+    // Reference to parent class
     Debugger* m_debugger;
+    // Debugger COM Interfaces
     IDebugClient* m_client;
     IDebugControl* m_control;
     IDebugDataSpaces* m_dataSpaces;
     IDebugRegisters* m_registers;
+    IDebugSymbols* m_symbols;
+    // Callbacks
     EventCallbacks m_eventCallbacks;
     OutputCallbacks m_outputCallbacks;
 };
@@ -295,6 +354,11 @@ void Debugger::close()
 int Debugger::wait() 
 {
     return p_impl->waitForEvent();
+}
+
+std::vector<Module> Debugger::getModules()
+{
+    return p_impl->getModules(p_impl->getNumLoadedModules());
 }
 
 } // namespace LlamaDebug

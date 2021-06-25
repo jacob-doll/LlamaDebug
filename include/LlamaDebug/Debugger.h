@@ -2,6 +2,9 @@
 #define __LAMADEBUG__DEBUGGER_H__
 
 #include <memory>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 #define LD_STATUS_ERROR 0
 #define LD_STATUS_DEAD 1
@@ -15,6 +18,14 @@
 namespace LlamaDebug 
 {
 
+struct Module
+{
+    std::string modName;
+    std::string file;
+    uint64_t baseAddr;
+    uint64_t size;
+};
+
 class Debugger
 {
 public:
@@ -24,11 +35,15 @@ public:
 
     bool open(char* target);
     void close();
+    
+    int wait();
+
+    std::vector<Module> getModules();
 
     void setOutputCallback(OutputCallback output_cb) { m_outputCallback = output_cb; }
     OutputCallback &getOutputCallback() { return m_outputCallback; }
 
-    int wait();
+
 
 // // Breakpoints
 //     void set_breakpoint();
