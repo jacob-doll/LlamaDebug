@@ -1,5 +1,5 @@
-#ifndef __LAMADEBUG__DEBUGGER_H__
-#define __LAMADEBUG__DEBUGGER_H__
+#ifndef LLAMADEBUG_DEBUGGER_H
+#define LLAMADEBUG_DEBUGGER_H
 
 #include <memory>
 #include <cstdint>
@@ -33,15 +33,15 @@ public:
     
     Debugger();
 
-    bool open(char* target);
-    void close();
+    bool Open(char* target);
+    void Close();
     
-    int wait();
+    int Wait();
 
-    std::vector<Module> getModules();
+    std::vector<Module> GetModules();
 
-    void setOutputCallback(OutputCallback output_cb) { m_outputCallback = output_cb; }
-    OutputCallback &getOutputCallback() { return m_outputCallback; }
+    void SetOutputCallback(OutputCallback output_cb) { m_outputCallback = output_cb; }
+    OutputCallback &GetOutputCallback() { return m_outputCallback; }
 
 
 
@@ -76,4 +76,4 @@ private:
 
 } // namespace LlamaDebug
 
-#endif // __LAMADEBUG__DEBUGGER_H__
+#endif // LLAMADEBUG_DEBUGGER_H

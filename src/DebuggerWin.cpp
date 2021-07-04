@@ -148,9 +148,9 @@ public:
         IN PCSTR Text
         )
     {
-        if (m_debugger->getOutputCallback())
+        if (m_debugger->GetOutputCallback())
         {
-            m_debugger->getOutputCallback()(Text);
+            m_debugger->GetOutputCallback()(Text);
         }
         return S_OK;
     }
@@ -166,7 +166,7 @@ public:
         m_outputCallbacks(debugger) {}
     ~Impl() {}
 
-    bool createInterfaces()
+    bool CreateInterfaces()
     {
         if (DebugCreate(__uuidof(IDebugClient), 
                                 (void**)&m_client) != S_OK) 
@@ -210,11 +210,11 @@ public:
 
         return true;
     fail:
-        terminate();
+        Terminate();
         return false;
     }
 
-    void terminate()
+    void Terminate()
     {
         m_client->EndSession(DEBUG_END_PASSIVE);
         if (m_symbols)
@@ -243,7 +243,16 @@ public:
         }
     }
 
-    bool createProcess(char* target) 
+    bool InitSymbols() 
+    {
+        if (m_symbols->SetSymbolPath("cache*;srv*https://msdl.microsoft.com/download/symbols") != S_OK)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool CreateProcess(char* target) 
     {
         if (m_client->CreateProcess(0, target, DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE) != S_OK) 
         {
@@ -252,7 +261,7 @@ public:
         return true;
     }
 
-    int waitForEvent() 
+    int WaitForEvent() 
     {
         HRESULT status;
         while ((status = m_control->WaitForEvent(DEBUG_WAIT_DEFAULT, 
@@ -280,7 +289,7 @@ public:
         return ret;
     }
 
-    ULONG getNumLoadedModules() 
+    ULONG GetNumLoadedModules() 
     {
         ULONG loaded, unloaded;
         if (m_symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
@@ -290,7 +299,7 @@ public:
         return loaded;
     }
 
-    std::vector<Module> getModules(ULONG numModules) 
+    std::vector<Module> GetModules(ULONG numModules) 
     {
         std::vector<Module> ret;
         PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[numModules];
@@ -339,26 +348,26 @@ public:
 
 Debugger::Debugger() : p_impl{new Impl(this)} { }
 
-bool Debugger::open(char *target) 
+bool Debugger::Open(char *target) 
 {
-    if (!p_impl->createInterfaces()) return false;
-    if (!p_impl->createProcess(target)) return false;
+    if (!p_impl->CreateInterfaces()) return false;
+    if (!p_impl->CreateProcess(target)) return false;
     return true;
 }
 
-void Debugger::close() 
+void Debugger::Close() 
 {
-    p_impl->terminate();
+    p_impl->Terminate();
 }
 
-int Debugger::wait() 
+int Debugger::Wait() 
 {
-    return p_impl->waitForEvent();
+    return p_impl->WaitForEvent();
 }
 
-std::vector<Module> Debugger::getModules()
+std::vector<Module> Debugger::GetModules()
 {
-    return p_impl->getModules(p_impl->getNumLoadedModules());
+    return p_impl->GetModules(p_impl->GetNumLoadedModules());
 }
 
 } // namespace LlamaDebug

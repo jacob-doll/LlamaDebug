@@ -1,6 +1,8 @@
 
 set(SRCS
     main.cpp
+    Binary/Binary.cpp
+    Binary/BinaryPE.cpp
 )
 
 if (WIN32)

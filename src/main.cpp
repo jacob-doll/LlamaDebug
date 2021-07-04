@@ -1,6 +1,8 @@
 #include <cstdio>
 
 #include "LlamaDebug/Debugger.h"
+#include "LlamaDebug/Binary/Binary.h"
+#include "LlamaDebug/Binary/BinaryPE.h"
 
 void outputCallback(const char* output) 
 {
@@ -12,6 +14,8 @@ void inputCallback(const char* prompt, unsigned long bufferSize)
     printf("getting input\n");
 }
 
+using namespace LlamaDebug;
+
 int main(int argc, char **argv) 
 {
 
@@ -21,28 +25,33 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    LlamaDebug::Debugger debugger;
-    debugger.setOutputCallback(&outputCallback);
+    Binary* binary = new BinaryPE();
+    binary->FromFile(argv[1]);
+    binary->DebugPrint();
+    delete binary;
 
-    if (!debugger.open(argv[1])) 
-    {
-        printf("Couldn't create debugger!\n");
-    }
+    // LlamaDebug::Debugger debugger;
+    // debugger.SetOutputCallback(&outputCallback);
 
-    int status;
-    while ((status = debugger.wait()) != LD_STATUS_DEAD) 
-    {
-        // if (status = LD_STATUS_LOAD_MODULE) continue;
-        for(LlamaDebug::Module mod : debugger.getModules())
-        {
-            printf("%s\n", mod.file.c_str());
-        }
-        printf("> ");
-        char buffer[512];
-        fgets(buffer, 512, stdin);
-    }
+    // if (!debugger.Open(argv[1])) 
+    // {
+    //     printf("Couldn't create debugger!\n");
+    // }
 
-    debugger.close();    
+    // int status;
+    // while ((status = debugger.Wait()) != LD_STATUS_DEAD) 
+    // {
+    //     if (status = LD_STATUS_LOAD_MODULE) continue;
+    //     // for(LlamaDebug::Module mod : debugger.GetModules())
+    //     // {
+    //     //     printf("%s\n", mod.file.c_str());
+    //     // }
+    //     printf("> ");
+    //     char buffer[512];
+    //     fgets(buffer, 512, stdin);
+    // }
+
+    // debugger.Close();    
 
     return 0;
 }
