@@ -25,33 +25,35 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Binary* binary = new BinaryPE();
-    binary->FromFile(argv[1]);
-    binary->DebugPrint();
-    delete binary;
+    // Binary* binary = new BinaryPE();
+    // binary->FromFile(argv[1]);
+    // binary->DebugPrint();
+    // delete binary;
 
-    // LlamaDebug::Debugger debugger;
-    // debugger.SetOutputCallback(&outputCallback);
+    if (!Debugger::Instance().Open(argv[1])) 
+    {
+        printf("Couldn't create debugger!\n");
+    }
 
-    // if (!debugger.Open(argv[1])) 
-    // {
-    //     printf("Couldn't create debugger!\n");
-    // }
+    int status;
+    while ((status = Debugger::Instance().Wait()) != LD_STATUS_DEAD) 
+    {
+        printf("%x\n", Debugger::Instance().GetProcessBase());
+        if (status = LD_STATUS_LOAD_MODULE) continue;
+        if (status = LD_STATUS_CREATE_PROCESS)
+        {
+            printf("%x\n", Debugger::Instance().GetProcessBase());
+        }
+        // for(LlamaDebug::Module mod : debugger.GetModules())
+        // {
+        //     printf("%s\n", mod.file.c_str());
+        // }
+        printf("> ");
+        char buffer[512];
+        fgets(buffer, 512, stdin);
+    }
 
-    // int status;
-    // while ((status = debugger.Wait()) != LD_STATUS_DEAD) 
-    // {
-    //     if (status = LD_STATUS_LOAD_MODULE) continue;
-    //     // for(LlamaDebug::Module mod : debugger.GetModules())
-    //     // {
-    //     //     printf("%s\n", mod.file.c_str());
-    //     // }
-    //     printf("> ");
-    //     char buffer[512];
-    //     fgets(buffer, 512, stdin);
-    // }
-
-    // debugger.Close();    
+    Debugger::Instance().Close();    
 
     return 0;
 }

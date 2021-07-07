@@ -28,10 +28,12 @@ struct Module
 
 class Debugger
 {
-public:
-    typedef void (*OutputCallback)(const char*);
-    
-    Debugger();
+public: 
+    static Debugger& Instance()
+    {
+        static Debugger instance;
+        return instance;
+    }
 
     bool Open(char* target);
     void Close();
@@ -40,10 +42,7 @@ public:
 
     std::vector<Module> GetModules();
 
-    void SetOutputCallback(OutputCallback output_cb) { m_outputCallback = output_cb; }
-    OutputCallback &GetOutputCallback() { return m_outputCallback; }
-
-
+    uintptr_t GetProcessBase();
 
 // // Breakpoints
 //     void set_breakpoint();
@@ -68,10 +67,11 @@ public:
 //     void step_over();
 
 private:
-    class Impl;
-    Impl* p_impl;
+    Debugger() {}
 
-    OutputCallback m_outputCallback;
+public:
+    Debugger(Debugger const&) = delete;
+    void operator=(Debugger const&) = delete;
 };
 
 } // namespace LlamaDebug

@@ -7,6 +7,26 @@
 
 namespace LlamaDebug 
 {
+
+typedef HRESULT (__stdcall *DebugCreate_t)(
+    _In_ REFIID InterfaceId,
+    _Out_ PVOID* Interface
+);
+
+static DebugCreate_t DLLDebugCreate = NULL;
+
+struct WinDbgContext
+{
+    uintptr_t BaseAddress;
+    IDebugClient* Client;
+    IDebugControl* Control;
+    IDebugDataSpaces* DataSpaces;
+    IDebugRegisters* Registers;
+    IDebugSymbols* Symbols;
+};
+
+static WinDbgContext g_Context;
+
 class EventCallbacks : public DebugBaseEventCallbacks 
 {
 public:
@@ -67,6 +87,7 @@ public:
         _In_ ULONG64 StartOffset
         )
     {
+        g_Context.BaseAddress = (uintptr_t) BaseOffset;
         return DEBUG_STATUS_BREAK;
     }
 
@@ -105,8 +126,6 @@ public:
 class OutputCallbacks : public IDebugOutputCallbacks
 {
 public:
-    OutputCallbacks(Debugger* debugger) : m_debugger(debugger) {}
-
     STDMETHOD(QueryInterface)(
         THIS_
         _In_ REFIID InterfaceId,
@@ -148,226 +167,218 @@ public:
         IN PCSTR Text
         )
     {
-        if (m_debugger->GetOutputCallback())
-        {
-            m_debugger->GetOutputCallback()(Text);
-        }
+        printf("%s", Text);
         return S_OK;
     }
-
-    Debugger *m_debugger;
 };
 
-class Debugger::Impl
+static EventCallbacks g_EventCallbacks;
+static OutputCallbacks g_OutputCallbacks;
+
+static bool DLLInit()
 {
-public:
-    Impl(Debugger* debugger) : 
-        m_debugger(debugger),
-        m_outputCallbacks(debugger) {}
-    ~Impl() {}
+    if (DLLDebugCreate) return true;
+    HMODULE h = LoadLibrary(TEXT("dbgeng.dll"));
+    if (!h) return false;
 
-    bool CreateInterfaces()
+    DLLDebugCreate = (DebugCreate_t)GetProcAddress(h, "DebugCreate");
+    if (!DLLDebugCreate) return false;
+    return true;
+}
+
+void Terminate()
+{
+    g_Context.Client->EndSession(DEBUG_END_PASSIVE);
+    if (g_Context.Symbols)
     {
-        if (DebugCreate(__uuidof(IDebugClient), 
-                                (void**)&m_client) != S_OK) 
-        {
-            goto fail;
-        }
+        g_Context.Symbols->Release();
+    }
 
-        if (m_client->QueryInterface(__uuidof(IDebugControl), 
-                                            (void**)&m_control) != S_OK) 
-        {
-            goto fail;
-        }
+    if (g_Context.Registers) 
+    {
+        g_Context.Registers->Release();
+    }
 
-        if (m_client->QueryInterface(__uuidof(IDebugDataSpaces), 
-                                            (void**)&m_dataSpaces) != S_OK) 
-        {
-            goto fail;
-        }
+    if (g_Context.DataSpaces) 
+    {
+        g_Context.DataSpaces->Release();
+    }
 
-        if (m_client->QueryInterface(__uuidof(IDebugRegisters), 
-                                            (void**)&m_registers) != S_OK) 
-        {
-            goto fail;
-        }
+    if (g_Context.Control) 
+    {
+        g_Context.Control->Release();
+    }
 
-        if (m_client->QueryInterface(__uuidof(IDebugSymbols),
-                                              (void**)&m_symbols) != S_OK)
-        {
-            goto fail;
-        }
+    if (g_Context.Client) 
+    {
+        g_Context.Client->Release();
+    }
+}
 
-        if (m_client->SetEventCallbacks(&m_eventCallbacks) != S_OK) 
-        {
-            goto fail;
-        }
+static bool CreateInterfaces()
+{
+    if (DLLDebugCreate(__uuidof(IDebugClient), 
+                            (void**)&g_Context.Client) != S_OK) 
+    {
+        goto fail;
+    }
 
-        if (m_client->SetOutputCallbacks(&m_outputCallbacks) != S_OK)
-        {
-            goto fail;
-        }
+    if (g_Context.Client->QueryInterface(__uuidof(IDebugControl), 
+                                        (void**)&g_Context.Control) != S_OK) 
+    {
+        goto fail;
+    }
 
-        return true;
-    fail:
-        Terminate();
+    if (g_Context.Client->QueryInterface(__uuidof(IDebugDataSpaces), 
+                                        (void**)&g_Context.DataSpaces) != S_OK) 
+    {
+        goto fail;
+    }
+
+    if (g_Context.Client->QueryInterface(__uuidof(IDebugRegisters), 
+                                        (void**)&g_Context.Registers) != S_OK) 
+    {
+        goto fail;
+    }
+
+    if (g_Context.Client->QueryInterface(__uuidof(IDebugSymbols),
+                                            (void**)&g_Context.Symbols) != S_OK)
+    {
+        goto fail;
+    }
+
+    if (g_Context.Client->SetEventCallbacks(&g_EventCallbacks) != S_OK) 
+    {
+        goto fail;
+    }
+
+    if (g_Context.Client->SetOutputCallbacks(&g_OutputCallbacks) != S_OK)
+    {
+        goto fail;
+    }
+
+    return true;
+fail:
+    Terminate();
+    return false;
+}
+
+bool InitSymbols() 
+{
+    if (g_Context.Symbols->SetSymbolPath("cache*;srv*https://msdl.microsoft.com/download/symbols") != S_OK)
+    {
         return false;
     }
+    return true;
+}
 
-    void Terminate()
+bool CreateProcess(char* target) 
+{
+    if (g_Context.Client->CreateProcess(0, target, DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE) != S_OK) 
     {
-        m_client->EndSession(DEBUG_END_PASSIVE);
-        if (m_symbols)
-        {
-            m_symbols->Release();
-        }
+        return false;
+    }
+    return true;
+}
 
-        if (m_registers) 
-        {
-            m_registers->Release();
-        }
-
-        if (m_dataSpaces) 
-        {
-            m_dataSpaces->Release();
-        }
-
-        if (m_control) 
-        {
-            m_control->Release();
-        }
-
-        if (m_client) 
-        {
-            m_client->Release();
-        }
+int WaitForEvent() 
+{
+    HRESULT status;
+    while ((status = g_Context.Control->WaitForEvent(DEBUG_WAIT_DEFAULT, 
+                                                INFINITE)) == S_FALSE);
+    if (FAILED(status))
+    {
+        return LD_STATUS_DEAD;
     }
 
-    bool InitSymbols() 
+    ULONG type, process_id, thread_id;
+    g_Context.Control->GetLastEventInformation(&type, &process_id, &thread_id, NULL, 0, NULL, NULL, 0, NULL);
+
+    int ret;
+
+    switch (type)
     {
-        if (m_symbols->SetSymbolPath("cache*;srv*https://msdl.microsoft.com/download/symbols") != S_OK)
-        {
-            return false;
-        }
-        return true;
+    case DEBUG_EVENT_BREAKPOINT: ret = LD_STATUS_BREAKPOINT; break;
+    case DEBUG_EVENT_EXCEPTION: ret = LD_STATUS_EXCEPTION; break;
+    case DEBUG_EVENT_CREATE_PROCESS: ret = LD_STATUS_CREATE_PROCESS; break;
+    case DEBUG_EVENT_EXIT_PROCESS: ret = LD_STATUS_EXIT_PROCESS; break;
+    case DEBUG_EVENT_LOAD_MODULE: ret = LD_STATUS_LOAD_MODULE; break;
+    default: ret = LD_STATUS_ERROR;
     }
 
-    bool CreateProcess(char* target) 
+    return ret;
+}
+
+ULONG GetNumLoadedModules() 
+{
+    ULONG loaded, unloaded;
+    if (g_Context.Symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
     {
-        if (m_client->CreateProcess(0, target, DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE) != S_OK) 
-        {
-            return false;
-        }
-        return true;
+        return 0;
     }
+    return loaded;
+}
 
-    int WaitForEvent() 
+std::vector<Module> GetLoadedModules(ULONG numModules) 
+{
+    std::vector<Module> ret;
+    PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[numModules];
+
+    if (g_Context.Symbols->GetModuleParameters(numModules, NULL, 0, params) != S_OK)
     {
-        HRESULT status;
-        while ((status = m_control->WaitForEvent(DEBUG_WAIT_DEFAULT, 
-                                                 INFINITE)) == S_FALSE);
-        if (FAILED(status))
-        {
-            return LD_STATUS_DEAD;
-        }
-
-        ULONG type, process_id, thread_id;
-        m_control->GetLastEventInformation(&type, &process_id, &thread_id, NULL, 0, NULL, NULL, 0, NULL);
-
-        int ret;
-
-        switch (type)
-        {
-        case DEBUG_EVENT_BREAKPOINT: ret = LD_STATUS_BREAKPOINT; break;
-        case DEBUG_EVENT_EXCEPTION: ret = LD_STATUS_EXCEPTION; break;
-        case DEBUG_EVENT_CREATE_PROCESS: ret = LD_STATUS_CREATE_PROCESS; break;
-        case DEBUG_EVENT_EXIT_PROCESS: ret = LD_STATUS_EXIT_PROCESS; break;
-        case DEBUG_EVENT_LOAD_MODULE: ret = LD_STATUS_LOAD_MODULE; break;
-        default: ret = LD_STATUS_ERROR;
-        }
-
         return ret;
     }
 
-    ULONG GetNumLoadedModules() 
+    ULONG i;
+    for (i = 0; i < numModules; i++)
     {
-        ULONG loaded, unloaded;
-        if (m_symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
+        char* modName = new char[params[i].ModuleNameSize];
+        char* imageName = new char[params[i].ImageNameSize];
+        if (g_Context.Symbols->GetModuleNames(
+            DEBUG_ANY_ID, params[i].Base, 
+            imageName, params[i].ImageNameSize, NULL,
+            modName, params[i].ModuleNameSize, NULL,
+            NULL, 0, NULL) != S_OK)
         {
-            return 0;
-        }
-        return loaded;
-    }
-
-    std::vector<Module> GetModules(ULONG numModules) 
-    {
-        std::vector<Module> ret;
-        PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[numModules];
-
-        if (m_symbols->GetModuleParameters(numModules, NULL, 0, params) != S_OK)
-        {
-            return ret;
-        }
-
-        ULONG i;
-        for (i = 0; i < numModules; i++)
-        {
-            char* modName = new char[params[i].ModuleNameSize];
-            char* imageName = new char[params[i].ImageNameSize];
-            if (m_symbols->GetModuleNames(
-                DEBUG_ANY_ID, params[i].Base, 
-                imageName, params[i].ImageNameSize, NULL,
-                modName, params[i].ModuleNameSize, NULL,
-                NULL, 0, NULL) != S_OK)
-            {
-                delete[] modName;
-                delete[] imageName;
-                break;
-            }
-            Module mod = {modName, imageName, params[i].Base, params[i].Size};
-            ret.emplace_back(mod);
             delete[] modName;
-            delete[] imageName; 
+            delete[] imageName;
+            break;
         }
-        delete[] params;
-        return ret;
+        Module mod = {modName, imageName, params[i].Base, params[i].Size};
+        ret.emplace_back(mod);
+        delete[] modName;
+        delete[] imageName; 
     }
-
-    // Reference to parent class
-    Debugger* m_debugger;
-    // Debugger COM Interfaces
-    IDebugClient* m_client;
-    IDebugControl* m_control;
-    IDebugDataSpaces* m_dataSpaces;
-    IDebugRegisters* m_registers;
-    IDebugSymbols* m_symbols;
-    // Callbacks
-    EventCallbacks m_eventCallbacks;
-    OutputCallbacks m_outputCallbacks;
-};
-
-Debugger::Debugger() : p_impl{new Impl(this)} { }
+    delete[] params;
+    return ret;
+}
 
 bool Debugger::Open(char *target) 
 {
-    if (!p_impl->CreateInterfaces()) return false;
-    if (!p_impl->CreateProcess(target)) return false;
+    if (!DLLInit()) return false;
+    if (!CreateInterfaces()) return false;
+    if (!CreateProcess(target)) return false;
     return true;
 }
 
 void Debugger::Close() 
 {
-    p_impl->Terminate();
+    Terminate();
 }
 
 int Debugger::Wait() 
 {
-    return p_impl->WaitForEvent();
+    return WaitForEvent();
 }
 
 std::vector<Module> Debugger::GetModules()
 {
-    return p_impl->GetModules(p_impl->GetNumLoadedModules());
+    return GetLoadedModules(GetNumLoadedModules());
+}
+
+uintptr_t Debugger::GetProcessBase()
+{
+    return g_Context.BaseAddress;
 }
 
 } // namespace LlamaDebug

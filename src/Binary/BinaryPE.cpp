@@ -5,6 +5,21 @@
 namespace LlamaDebug
 {
 
+static uint32_t RVAToPhysical(PEImageSectionHeader *Sections, uint16_t NumSections, uint32_t RVA)
+{
+    for (uint16_t i = 0; i < NumSections; i++)
+    {
+        uint32_t SectionVirtualAddress = Sections[i].VirtualAddress;
+        uint32_t SectionVirtualSize = Sections[i].Misc.VirtualSize;
+        if (RVA >= SectionVirtualAddress && 
+            RVA < SectionVirtualAddress + SectionVirtualSize)
+        {
+            return Sections[i].PointerToRawData + (RVA - SectionVirtualAddress);
+        }
+    }
+    return RVA;
+}
+
 BinaryPE::~BinaryPE()
 {
     delete[] m_SectionHeaders;
@@ -25,6 +40,8 @@ bool BinaryPE::FromFile(const std::string& Filename)
     {
         BinaryFile.read((char*)(&m_SectionHeaders[i]), sizeof(PEImageSectionHeader));
     }
+
+    
 
     BinaryFile.close();
     return true;
