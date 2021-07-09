@@ -3,6 +3,11 @@
 
 #include <cstdint>
 
+#define IMAGE_DOS_SIGNATURE                 0x5A4D      // MZ
+#define IMAGE_OS2_SIGNATURE                 0x454E      // NE
+#define IMAGE_OS2_SIGNATURE_LE              0x454C      // LE
+#define IMAGE_VXD_SIGNATURE                 0x454C      // LE
+#define IMAGE_NT_SIGNATURE                  0x00004550  // PE00
 struct PEImageDosHeader 
 {
     uint16_t e_magic;         // Magic number
@@ -29,6 +34,8 @@ struct PEImageDosHeader
 // ========================================== //
 // File Header
 // ========================================== //
+
+#define IMAGE_FILE_HEADER(x) x + 0x000000F4
 
 struct PEImageFileHeader 
 {
@@ -156,7 +163,6 @@ struct PEImageOptionalHeader64
     uint32_t SizeOfUninitializedData;
     uint32_t AddressOfEntryPoint;
     uint32_t BaseOfCode;
-    uint32_t BaseOfData;
 
     /* NT additional fields. */
 
@@ -240,6 +246,8 @@ struct PEImageOptionalHeader64
 // ========================================== //
 // NT Headers
 // ========================================== //
+
+#define IMAGE_NT_HEADERS(x) x + 0x000000F0
 
 struct PEImageNTHeaders32 
 {

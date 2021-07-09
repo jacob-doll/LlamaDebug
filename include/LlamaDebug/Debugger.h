@@ -41,8 +41,12 @@ public:
     int Wait();
 
     std::vector<Module> GetModules();
-
     uintptr_t GetProcessBase();
+    uint32_t GetProgramSize();
+
+    uint32_t ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size);
+
+    
 
 // // Breakpoints
 //     void set_breakpoint();

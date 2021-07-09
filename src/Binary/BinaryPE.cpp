@@ -25,6 +25,29 @@ BinaryPE::~BinaryPE()
     delete[] m_SectionHeaders;
 }
 
+bool BinaryPE::Validate(const uint8_t* Buffer, uint32_t Size)
+{
+    // Must have the default MS-Dos header
+    if (Size < sizeof(PEImageDosHeader)) return false;
+    // Check Dos Signature
+    uint16_t DosSignature;
+    std::memcpy(&DosSignature, Buffer, sizeof(DosSignature));
+    if (DosSignature == IMAGE_DOS_SIGNATURE)
+    {
+        uint32_t ExeOffset;
+        std::memcpy(&ExeOffset, Buffer + 0x3c, sizeof(ExeOffset));
+        // Check NT Signature 0x00004550 (PE)
+        uint32_t NTSignature;
+        std::memcpy(&NTSignature, Buffer + ExeOffset, sizeof(NTSignature));
+        if (NTSignature != IMAGE_NT_SIGNATURE) return false;
+        // Check that executable is 32-Bit
+        uint16_t OptionalMagic;
+        std::memcpy(&OptionalMagic, Buffer + ExeOffset + 0x18, sizeof(OptionalMagic));
+        if (OptionalMagic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) return true;
+    }
+    return false;
+}
+
 bool BinaryPE::FromFile(const std::string& Filename) 
 { 
     std::ifstream BinaryFile(Filename, std::ios::in|std::ios::binary);
@@ -47,7 +70,25 @@ bool BinaryPE::FromFile(const std::string& Filename)
     return true;
 }
 
-bool BinaryPE::FromBuffer(const uint8_t* Buffer, uint32_t Size) { return true; }
+bool BinaryPE::FromBuffer(const uint8_t* Buffer, uint32_t Size) { 
+    if (!Validate(Buffer, Size)) return false;
+
+
+    std::memcpy(&m_DosHeader, Buffer, sizeof(m_DosHeader));
+    uint32_t Index = m_DosHeader.e_lfanew;
+    std::memcpy(&m_Headers, Buffer + Index, sizeof(m_Headers));
+    Index += sizeof(m_Headers);
+
+    m_SectionHeaders = new PEImageSectionHeader[m_Headers.FileHeader.NumberOfSections];
+
+    for (uint16_t i = 0; i < m_Headers.FileHeader.NumberOfSections; i++)
+    {
+        std::memcpy(&m_SectionHeaders[i], Buffer + Index, sizeof(PEImageSectionHeader));
+        Index += sizeof(PEImageSectionHeader);
+    } 
+
+    return true; 
+}
 
 void BinaryPE::DebugPrint()
 {
@@ -55,6 +96,11 @@ void BinaryPE::DebugPrint()
     {
         printf("%.8s\n", m_SectionHeaders[i].Name);
     } 
+}
+
+uintptr_t BinaryPE::GetEntryPoint()
+{
+    return m_Headers.OptionalHeader.AddressOfEntryPoint + m_Headers.OptionalHeader.ImageBase;
 }
 
 } // namespace LlamaDebug

@@ -17,6 +17,8 @@ public:
     virtual bool FromBuffer(const uint8_t* Buffer, uint32_t Size) = 0;
 
     virtual void DebugPrint() = 0;
+
+    virtual uintptr_t GetEntryPoint() = 0;
 private:
 };
 

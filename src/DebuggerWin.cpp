@@ -1,4 +1,5 @@
-#include "LlamaDebug/Debugger.h"
+#include <LlamaDebug/Debugger.h>
+#include <LlamaDebug/Binary/Defs/PE.h>
 
 #include <Windows.h>
 #include <DbgEng.h>
@@ -18,6 +19,7 @@ static DebugCreate_t DLLDebugCreate = NULL;
 struct WinDbgContext
 {
     uintptr_t BaseAddress;
+    uint32_t ProgramSize;
     IDebugClient* Client;
     IDebugControl* Control;
     IDebugDataSpaces* DataSpaces;
@@ -88,6 +90,7 @@ public:
         )
     {
         g_Context.BaseAddress = (uintptr_t) BaseOffset;
+        g_Context.ProgramSize = ModuleSize;
         return DEBUG_STATUS_BREAK;
     }
 
@@ -358,6 +361,7 @@ bool Debugger::Open(char *target)
     if (!DLLInit()) return false;
     if (!CreateInterfaces()) return false;
     if (!CreateProcess(target)) return false;
+    if (!InitSymbols()) return false;
     return true;
 }
 
@@ -371,6 +375,16 @@ int Debugger::Wait()
     return WaitForEvent();
 }
 
+uint32_t Debugger::ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size)
+{
+    ULONG BytesRead = 0;
+    if (g_Context.DataSpaces->ReadVirtual(Offset, Buffer, Size, &BytesRead) != S_OK)
+    {
+        return 0;
+    }
+    return BytesRead;
+}
+
 std::vector<Module> Debugger::GetModules()
 {
     return GetLoadedModules(GetNumLoadedModules());
@@ -379,6 +393,11 @@ std::vector<Module> Debugger::GetModules()
 uintptr_t Debugger::GetProcessBase()
 {
     return g_Context.BaseAddress;
+}
+
+uint32_t Debugger::GetProgramSize()
+{
+    return g_Context.ProgramSize;
 }
 
 } // namespace LlamaDebug
