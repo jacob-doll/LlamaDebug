@@ -284,7 +284,21 @@ bool CreateProcess(char* target)
     return true;
 }
 
-int WaitForEvent() 
+bool Debugger::Open(char *target) 
+{
+    if (!DLLInit()) return false;
+    if (!CreateInterfaces()) return false;
+    if (!CreateProcess(target)) return false;
+    if (!InitSymbols()) return false;
+    return true;
+}
+
+void Debugger::Close() 
+{
+    Terminate();
+}
+
+int Debugger::Wait() 
 {
     HRESULT status;
     while ((status = g_Context.Control->WaitForEvent(DEBUG_WAIT_DEFAULT, 
@@ -312,28 +326,59 @@ int WaitForEvent()
     return ret;
 }
 
-ULONG GetNumLoadedModules() 
+uint32_t Debugger::ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size)
 {
-    ULONG loaded, unloaded;
-    if (g_Context.Symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
+    ULONG BytesRead = 0;
+    if (g_Context.DataSpaces->ReadVirtual(Offset, Buffer, Size, &BytesRead) != S_OK)
     {
         return 0;
     }
-    return loaded;
+    return BytesRead;
 }
 
-std::vector<Module> GetLoadedModules(ULONG numModules) 
+Breakpoint* Debugger::AddBreakpoint(uintptr_t Addr) 
 {
-    std::vector<Module> ret;
-    PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[numModules];
+    static ULONG index = 0;
+    if (m_Breakpoints.count(Addr) > 0)
+    {
+        return &m_Breakpoints.at(Addr);
+    }
 
-    if (g_Context.Symbols->GetModuleParameters(numModules, NULL, 0, params) != S_OK)
+    HRESULT status;
+    PDEBUG_BREAKPOINT bp;
+    while ((status = g_Context.Control->AddBreakpoint(DEBUG_BREAKPOINT_CODE, index, &bp)) == E_INVALIDARG)
+    {
+        ++index;
+    }
+    if (status != S_OK)
+    {
+        return nullptr;
+    }
+    bp->AddFlags(DEBUG_BREAKPOINT_ENABLED);
+    bp->SetOffset(Addr);
+    m_Breakpoints[Addr] = {index, Addr, 0, true};
+    return nullptr;
+}
+
+std::vector<Module> Debugger::GetModules()
+{
+    ULONG loaded, unloaded;
+    std::vector<Module> ret;
+    
+    if (g_Context.Symbols->GetNumberModules(&loaded, &unloaded) != S_OK)
+    {
+        return ret;
+    }
+    
+    PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[loaded];
+
+    if (g_Context.Symbols->GetModuleParameters(loaded, NULL, 0, params) != S_OK)
     {
         return ret;
     }
 
     ULONG i;
-    for (i = 0; i < numModules; i++)
+    for (i = 0; i < loaded; i++)
     {
         char* modName = new char[params[i].ModuleNameSize];
         char* imageName = new char[params[i].ImageNameSize];
@@ -354,40 +399,6 @@ std::vector<Module> GetLoadedModules(ULONG numModules)
     }
     delete[] params;
     return ret;
-}
-
-bool Debugger::Open(char *target) 
-{
-    if (!DLLInit()) return false;
-    if (!CreateInterfaces()) return false;
-    if (!CreateProcess(target)) return false;
-    if (!InitSymbols()) return false;
-    return true;
-}
-
-void Debugger::Close() 
-{
-    Terminate();
-}
-
-int Debugger::Wait() 
-{
-    return WaitForEvent();
-}
-
-uint32_t Debugger::ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size)
-{
-    ULONG BytesRead = 0;
-    if (g_Context.DataSpaces->ReadVirtual(Offset, Buffer, Size, &BytesRead) != S_OK)
-    {
-        return 0;
-    }
-    return BytesRead;
-}
-
-std::vector<Module> Debugger::GetModules()
-{
-    return GetLoadedModules(GetNumLoadedModules());
 }
 
 uintptr_t Debugger::GetProcessBase()

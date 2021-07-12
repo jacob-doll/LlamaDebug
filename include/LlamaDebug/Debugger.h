@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
 
 #define LD_STATUS_ERROR 0
 #define LD_STATUS_DEAD 1
@@ -20,10 +21,18 @@ namespace LlamaDebug
 
 struct Module
 {
-    std::string modName;
-    std::string file;
-    uint64_t baseAddr;
-    uint64_t size;
+    std::string ModName;
+    std::string File;
+    uint64_t BaseAddr;
+    uint64_t Size;
+};
+
+struct Breakpoint
+{
+    uint32_t ID;
+    uintptr_t Addr;
+    uint32_t Hits;
+    bool Enabled;
 };
 
 class Debugger
@@ -46,7 +55,10 @@ public:
 
     uint32_t ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size);
 
-    
+    Breakpoint* AddBreakpoint(uintptr_t Addr);
+
+private:
+    std::map<uintptr_t, Breakpoint> m_Breakpoints;    
 
 // // Breakpoints
 //     void set_breakpoint();

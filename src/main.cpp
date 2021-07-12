@@ -40,6 +40,7 @@ int main(int argc, char **argv)
     binary->FromBuffer(Buffer, ProgramSize);
     binary->DebugPrint();
     printf("%p\n", (void*) binary->GetEntryPoint());
+    Debugger::Instance().AddBreakpoint(binary->GetEntryPoint());
     delete binary;
     delete[] Buffer;
 
@@ -47,14 +48,10 @@ int main(int argc, char **argv)
     while ((status = Debugger::Instance().Wait()) != LD_STATUS_DEAD) 
     {
         if (status == LD_STATUS_CREATE_PROCESS) printf("Process base: %p\n", (void*)Debugger::Instance().GetProcessBase());
-        // if (status = LD_STATUS_LOAD_MODULE) continue;
-        // // for(LlamaDebug::Module mod : debugger.GetModules())
-        // // {
-        // //     printf("%s\n", mod.file.c_str());
-        // // }
-        // printf("> ");
-        // char buffer[512];
-        // fgets(buffer, 512, stdin);
+        if (status == LD_STATUS_LOAD_MODULE) continue;
+        printf("> ");
+        char buffer[512];
+        fgets(buffer, 512, stdin);
     }
 
     printf("Closing Debugger!\n");
