@@ -1,4 +1,4 @@
-#include <LlamaDebug/Binary/Binary.h>
+#include <llama_debug/Binary/Binary.h>
 
 #include <exception>
 

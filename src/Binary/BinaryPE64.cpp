@@ -1,4 +1,4 @@
-#include <LlamaDebug/Binary/BinaryPE64.h>
+#include <llama_debug/Binary/BinaryPE64.h>
 #include <fstream>
 #include <cstdio>
 

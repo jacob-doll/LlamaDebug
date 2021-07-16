@@ -1,18 +1,18 @@
-from LlamaDebug import *
+import llama_debug as ld
 
 def __main__():
-    if (not Debugger.Instance().Open("cmd.exe")):
+    if (not ld.debug_open("cmd.exe")):
         print("Could not create debugger!");
     
     while True:
-        status = Debugger.Instance().Wait()
-        if status is LD_STATUS_DEAD:
+        status = ld.debug_wait()
+        if status is ld.STATUS_DEAD:
             break
-        if status is LD_STATUS_LOAD_MODULE:
+        if status is ld.STATUS_LOAD_MODULE:
             continue
         user_input = input("> ")
 
-    Debugger.Instance().Close()
+    ld.debug_close()
 
 if __name__ == "__main__":
     __main__()

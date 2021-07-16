@@ -82,13 +82,13 @@ class CMakeBuild(build_ext):
         )
 
 setup(
-    name="LlamaDebug",
+    name="Llama Debug",
     version="0.0.1",
     author="Jacob Doll",
     author_email="jacob.g.doll@gmail.com",
     description="Scripting debugging engine for python.",
     long_description="",
-    ext_modules=[CMakeExtension("LlamaDebug")],
+    ext_modules=[CMakeExtension("llama_debug")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
     # extras_require={"test": ["pytest"]},

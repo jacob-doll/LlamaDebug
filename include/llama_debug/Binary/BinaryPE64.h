@@ -1,18 +1,16 @@
-#ifndef LLAMADEBUG_BINARYPE_H
-#define LLAMADEBUG_BINARYPE_H
+#ifndef LLAMADEBUG_BINARYPE64_H
+#define LLAMADEBUG_BINARYPE64_H
 
-#include <LlamaDebug/Binary/Binary.h>
-#include <LlamaDebug/Binary/Defs/PE.h>
-
-#include <string>
+#include <llama_debug/Binary/Binary.h>
+#include <llama_debug/Binary/Defs/PE.h>
 
 namespace LlamaDebug
 {
 
-class BinaryPE : public Binary
+class BinaryPE64 : public Binary
 {
 public:
-    virtual ~BinaryPE();
+    virtual ~BinaryPE64();
     
     static bool Validate(const uint8_t* Buffer, uint32_t Size);
 
@@ -25,10 +23,10 @@ public:
 
 private:
     PEImageDosHeader m_DosHeader;
-    PEImageNTHeaders32 m_Headers;
+    PEImageNTHeaders64 m_Headers;
     PEImageSectionHeader *m_SectionHeaders;
 };
 
 } // namespace LlamaDebug
 
-#endif // LLAMADEBUG_BINARYPE_H
+#endif // LLAMADEBUG_BINARYPE64_H
