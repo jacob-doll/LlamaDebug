@@ -1,16 +1,16 @@
 
 set(SRCS
-    main.cpp
+    Bindings.cpp
     Binary/Binary.cpp
     Binary/BinaryPE.cpp
+    Binary/BinaryPE64.cpp
 )
 
 if (WIN32)
+    set(SRCS
+        ${SRCS}
+        DebuggerWin.cpp
+    )
 
-set(SRCS
-    ${SRCS}
-    DebuggerWin.cpp
-)
-add_executable(LlamaDebug ${SRCS})
-
-endif()
+    pybind11_add_module(${PROJECT_NAME} ${SRCS})
+endif() # WIN32

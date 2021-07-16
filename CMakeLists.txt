@@ -1,13 +1,10 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(LlamaDebug VERSION 0.1.0)
-
-include(CTest)
-enable_testing()
+cmake_minimum_required(VERSION 3.4...3.18)
+project(LlamaDebug)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+add_subdirectory(extern/pybind11)
 add_subdirectory(src)
-add_subdirectory(samples)
+# add_subdirectory(samples)
 
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+target_compile_definitions(LlamaDebug PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
+

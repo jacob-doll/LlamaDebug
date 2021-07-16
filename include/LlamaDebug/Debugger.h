@@ -84,10 +84,6 @@ private:
 
 private:
     Debugger() {}
-
-public:
-    Debugger(Debugger const&) = delete;
-    void operator=(Debugger const&) = delete;
 };
 
 } // namespace LlamaDebug

@@ -329,7 +329,7 @@ int Debugger::Wait()
 uint32_t Debugger::ReadMemory(uintptr_t Offset, uint8_t* Buffer, size_t Size)
 {
     ULONG BytesRead = 0;
-    if (g_Context.DataSpaces->ReadVirtual(Offset, Buffer, Size, &BytesRead) != S_OK)
+    if (g_Context.DataSpaces->ReadVirtual(Offset, Buffer, (ULONG) Size, &BytesRead) != S_OK)
     {
         return 0;
     }

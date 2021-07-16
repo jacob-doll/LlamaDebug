@@ -3,6 +3,7 @@
 #include "LlamaDebug/Debugger.h"
 #include "LlamaDebug/Binary/Binary.h"
 #include "LlamaDebug/Binary/BinaryPE.h"
+#include "LlamaDebug/Binary/BinaryPE64.h"
 #include "LlamaDebug/Binary/Defs/PE.h"
 
 void outputCallback(const char* output) 
@@ -35,14 +36,20 @@ int main(int argc, char **argv)
     if (BinaryPE::Validate(Buffer, ProgramSize))
     {
         printf("Windows 32-bit\n");
+        Binary *binary = new BinaryPE();
+        binary->FromBuffer(Buffer, ProgramSize);
+        Debugger::Instance().AddBreakpoint(binary->GetEntryPoint());
+        delete binary;
+        delete[] Buffer;
+    } else if (BinaryPE64::Validate(Buffer, ProgramSize))
+    {
+        printf("Windows 64-bit\n");
+        Binary *binary = new BinaryPE64();
+        binary->FromBuffer(Buffer, ProgramSize);
+        Debugger::Instance().AddBreakpoint(binary->GetEntryPoint());
+        delete binary;
+        delete[] Buffer;
     }
-    Binary *binary = new BinaryPE();
-    binary->FromBuffer(Buffer, ProgramSize);
-    binary->DebugPrint();
-    printf("%p\n", (void*) binary->GetEntryPoint());
-    Debugger::Instance().AddBreakpoint(binary->GetEntryPoint());
-    delete binary;
-    delete[] Buffer;
 
     int status;
     while ((status = Debugger::Instance().Wait()) != LD_STATUS_DEAD) 
@@ -53,6 +60,11 @@ int main(int argc, char **argv)
         char buffer[512];
         fgets(buffer, 512, stdin);
     }
+
+    // for (Module mod : Debugger::Instance().GetModules())
+    // {
+    //     printf("%s\n", mod.ModName.c_str());
+    // }
 
     printf("Closing Debugger!\n");
 
