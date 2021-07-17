@@ -1,6 +1,4 @@
-#include <llama_debug/Binary/Binary.h>
-
-#include <exception>
+#include <llama_debug/binary/binary.h>
 
 namespace LlamaDebug
 {

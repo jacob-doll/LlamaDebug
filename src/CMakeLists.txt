@@ -1,9 +1,9 @@
 
 set(SRCS
     py_bindings.cpp
-    binary/Binary.cpp
-    binary/BinaryPE.cpp
-    binary/BinaryPE64.cpp
+    binary/binary.cpp
+    binary/binary_pe.cpp
+    binary/binary_pe64.cpp
 )
 
 if (WIN32)
