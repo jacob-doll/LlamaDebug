@@ -4,24 +4,24 @@
 #include <string>
 #include <cstdint>
 
-namespace LlamaDebug
-{
+namespace llama_debug {
 
-class Binary
+class binary
 {
 public:
-    Binary() = default;
-    virtual ~Binary();
+  binary() = default;
+  virtual ~binary();
 
-    virtual bool FromFile(const std::string& Filename) = 0;
-    virtual bool FromBuffer(const uint8_t* Buffer, uint32_t Size) = 0;
+  virtual bool from_file(const std::string &filename) = 0;
+  virtual bool from_buffer(const uint8_t *buffer, uint32_t size) = 0;
 
-    virtual void DebugPrint() = 0;
+  virtual void debug_print() = 0;
 
-    virtual uintptr_t GetEntryPoint() = 0;
+  virtual uintptr_t entry_point() = 0;
+
 private:
 };
 
-}; // LlamaDebug
+};// namespace llama_debug
 
-#endif // LLAMADEBUG_BINARY_H
+#endif// LLAMADEBUG_BINARY_H

@@ -1,8 +1,8 @@
 #include <llama_debug/binary/binary.h>
 
-namespace LlamaDebug
+namespace llama_debug
 {
 
-Binary::~Binary() {}
+binary::~binary() {}
 
-} // namespace LlamaDebug
+} // namespace llama_debug
