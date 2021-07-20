@@ -28,11 +28,13 @@ PYBIND11_MODULE(llama_debug, m)
     .def_readwrite("hits", &ld_breakpoint::hits)
     .def_readwrite("enabled", &ld_breakpoint::enabled);
 
-  m.def("debug_open", &ld_debug_open);
-  m.def("debug_close", &ld_debug_close);
-  m.def("debug_wait", &ld_debug_wait);
-  m.def("get_modules", &ld_get_modules);
-  m.def("get_process_base", &ld_get_process_base);
-  m.def("read_virtual", &ld_read_virtual);
-  m.def("add_breakpoint", &ld_add_breakpoint);
+  py::class_<ld_debugger>(m, "debugger")
+    .def(py::init<>())
+    .def("open", &ld_debugger::open)
+    .def("close", &ld_debugger::close)
+    .def("wait", &ld_debugger::wait)
+    .def("get_modules", &ld_debugger::get_modules)
+    .def("get_process_base", &ld_debugger::get_process_base)
+    .def("read_virtual", &ld_debugger::read_virtual)
+    .def("add_breakpoint", &ld_debugger::add_breakpoint);
 }

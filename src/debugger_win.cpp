@@ -14,19 +14,19 @@ typedef HRESULT(__stdcall *DebugCreate_t)(
 
 static DebugCreate_t DLLDebugCreate = NULL;
 
-struct windbg_context
+struct ld_debugger::ld_debug_ctx
 {
-  uintptr_t BaseAddress;
-  uint32_t ModuleSize;
-  IDebugClient *Client;
-  IDebugControl *Control;
-  IDebugDataSpaces *DataSpaces;
-  IDebugRegisters *Registers;
-  IDebugSymbols *Symbols;
+  uintptr_t base_address;
+  uint32_t module_size;
+  IDebugClient *client;
+  IDebugControl *control;
+  IDebugDataSpaces *data_spaces;
+  IDebugRegisters *registers;
+  IDebugSymbols *symbols;
+  IDebugEventCallbacks *event_callbacks;
+  IDebugOutputCallbacks *output_callbacks;
   std::map<uintptr_t, ld_breakpoint> breakpoints;
 };
-
-static windbg_context g_context;
 
 class EventCallbacks : public DebugBaseEventCallbacks
 {
@@ -86,8 +86,8 @@ public:
     _In_ ULONG64 ThreadDataOffset,
     _In_ ULONG64 StartOffset)
   {
-    g_context.BaseAddress = (uintptr_t)BaseOffset;
-    g_context.ModuleSize = ModuleSize;
+    // g_context.BaseAddress = (uintptr_t)BaseOffset;
+    // g_context.ModuleSize = ModuleSize;
     return DEBUG_STATUS_BREAK;
   }
 
@@ -171,30 +171,6 @@ public:
 static EventCallbacks g_event_callbacks;
 static OutputCallbacks g_output_callbacks;
 
-void ld_debug_close()
-{
-  g_context.Client->EndSession(DEBUG_END_PASSIVE);
-  if (g_context.Symbols) {
-    g_context.Symbols->Release();
-  }
-
-  if (g_context.Registers) {
-    g_context.Registers->Release();
-  }
-
-  if (g_context.DataSpaces) {
-    g_context.DataSpaces->Release();
-  }
-
-  if (g_context.Control) {
-    g_context.Control->Release();
-  }
-
-  if (g_context.Client) {
-    g_context.Client->Release();
-  }
-}
-
 static bool DLL_init()
 {
   if (DLLDebugCreate)
@@ -209,70 +185,68 @@ static bool DLL_init()
   return true;
 }
 
-static bool create_interfaces()
+ld_debugger::ld_debugger()
+  : m_ctx(new ld_debugger::ld_debug_ctx)
+{}
+
+ld_debugger::~ld_debugger() {}
+
+bool ld_debugger::open(char *target)
 {
+  if (!DLL_init()) {
+    return false;
+  }
+
   if (DLLDebugCreate(
         __uuidof(IDebugClient),
-        (void **)&g_context.Client)
+        (void **)&m_ctx->client)
       != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->QueryInterface(
+  if (m_ctx->client->QueryInterface(
         __uuidof(IDebugControl),
-        (void **)&g_context.Control)
+        (void **)&m_ctx->control)
       != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->QueryInterface(
+  if (m_ctx->client->QueryInterface(
         __uuidof(IDebugDataSpaces),
-        (void **)&g_context.DataSpaces)
+        (void **)&m_ctx->data_spaces)
       != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->QueryInterface(
+  if (m_ctx->client->QueryInterface(
         __uuidof(IDebugRegisters),
-        (void **)&g_context.Registers)
+        (void **)&m_ctx->registers)
       != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->QueryInterface(
+  if (m_ctx->client->QueryInterface(
         __uuidof(IDebugSymbols),
-        (void **)&g_context.Symbols)
+        (void **)&m_ctx->symbols)
       != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->SetEventCallbacks(&g_event_callbacks) != S_OK) {
+  if (m_ctx->client->SetEventCallbacks(&g_event_callbacks) != S_OK) {
     goto fail;
   }
 
-  if (g_context.Client->SetOutputCallbacks(&g_output_callbacks) != S_OK) {
+  if (m_ctx->client->SetOutputCallbacks(&g_output_callbacks) != S_OK) {
     goto fail;
   }
 
-  return true;
-fail:
-  ld_debug_close();
-  return false;
-}
-
-bool ld_debug_open(char *target)
-{
-  if (!DLL_init())
-    return false;
-  if (!create_interfaces())
-    return false;
-  if (g_context.Symbols->SetSymbolPath(
+  if (m_ctx->symbols->SetSymbolPath(
         "cache*;srv*https://msdl.microsoft.com/download/symbols")
       != S_OK) {
     return false;
   }
 
-  if (g_context.Client->CreateProcess(
+  if (m_ctx->client->CreateProcess(
         0,
         target,
         DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE)
@@ -280,12 +254,43 @@ bool ld_debug_open(char *target)
     return false;
   }
   return true;
+
+fail:
+  close();
+  return false;
 }
 
-int ld_debug_wait()
+void ld_debugger::close()
+{
+  if (m_ctx->client) {
+    m_ctx->client->EndSession(DEBUG_END_PASSIVE);
+  }
+
+  if (m_ctx->symbols) {
+    m_ctx->symbols->Release();
+  }
+
+  if (m_ctx->registers) {
+    m_ctx->registers->Release();
+  }
+
+  if (m_ctx->data_spaces) {
+    m_ctx->data_spaces->Release();
+  }
+
+  if (m_ctx->control) {
+    m_ctx->control->Release();
+  }
+
+  if (m_ctx->client) {
+    m_ctx->client->Release();
+  }
+}
+
+int ld_debugger::wait()
 {
   HRESULT status;
-  while ((status = g_context.Control->WaitForEvent(
+  while ((status = m_ctx->control->WaitForEvent(
             DEBUG_WAIT_DEFAULT,
             INFINITE))
          == S_FALSE)
@@ -295,7 +300,7 @@ int ld_debug_wait()
     return LD_STATUS_DEAD;
 
   ULONG type, process_id, thread_id;
-  g_context.Control->GetLastEventInformation(
+  m_ctx->control->GetLastEventInformation(
     &type,
     &process_id,
     &thread_id,
@@ -331,18 +336,18 @@ int ld_debug_wait()
   return ret;
 }
 
-std::vector<ld_module> ld_get_modules()
+std::vector<ld_module> ld_debugger::get_modules()
 {
   ULONG loaded, unloaded;
   std::vector<ld_module> ret;
 
-  if (g_context.Symbols->GetNumberModules(&loaded, &unloaded) != S_OK) {
+  if (m_ctx->symbols->GetNumberModules(&loaded, &unloaded) != S_OK) {
     return ret;
   }
 
   PDEBUG_MODULE_PARAMETERS params = new DEBUG_MODULE_PARAMETERS[loaded];
 
-  if (g_context.Symbols->GetModuleParameters(
+  if (m_ctx->symbols->GetModuleParameters(
         loaded, NULL, 0, params)
       != S_OK) {
     return ret;
@@ -352,7 +357,7 @@ std::vector<ld_module> ld_get_modules()
   for (i = 0; i < loaded; i++) {
     char *modName = new char[params[i].ModuleNameSize];
     char *imageName = new char[params[i].ImageNameSize];
-    if (g_context.Symbols->GetModuleNames(
+    if (m_ctx->symbols->GetModuleNames(
           DEBUG_ANY_ID, params[i].Base, imageName, params[i].ImageNameSize, NULL, modName, params[i].ModuleNameSize, NULL, NULL, 0, NULL)
         != S_OK) {
       delete[] modName;
@@ -368,15 +373,15 @@ std::vector<ld_module> ld_get_modules()
   return ret;
 }
 
-uintptr_t ld_get_process_base()
+uintptr_t ld_debugger::get_process_base()
 {
-  return g_context.BaseAddress;
+  return m_ctx->base_address;
 }
 
-uint32_t ld_read_virtual(uintptr_t offset, uint8_t *buffer, size_t size)
+uint32_t ld_debugger::read_virtual(uintptr_t offset, uint8_t *buffer, size_t size)
 {
   ULONG BytesRead = 0;
-  if (g_context.DataSpaces->ReadVirtual(
+  if (m_ctx->data_spaces->ReadVirtual(
         offset, buffer, (ULONG)size, &BytesRead)
       != S_OK) {
     return 0;
@@ -384,16 +389,16 @@ uint32_t ld_read_virtual(uintptr_t offset, uint8_t *buffer, size_t size)
   return BytesRead;
 }
 
-ld_breakpoint *ld_add_breakpoint(uintptr_t addr)
+ld_breakpoint *ld_debugger::add_breakpoint(uintptr_t addr)
 {
   static ULONG index = 0;
-  if (g_context.breakpoints.count(addr) > 0) {
-    return &g_context.breakpoints.at(addr);
+  if (m_ctx->breakpoints.count(addr) > 0) {
+    return &m_ctx->breakpoints.at(addr);
   }
 
   HRESULT status;
   PDEBUG_BREAKPOINT bp;
-  while ((status = g_context.Control->AddBreakpoint(
+  while ((status = m_ctx->control->AddBreakpoint(
             DEBUG_BREAKPOINT_CODE, index, &bp))
          == E_INVALIDARG) {
     ++index;
@@ -403,8 +408,8 @@ ld_breakpoint *ld_add_breakpoint(uintptr_t addr)
   }
   bp->AddFlags(DEBUG_BREAKPOINT_ENABLED);
   bp->SetOffset(addr);
-  g_context.breakpoints[addr] = { index, addr, 0, true };
-  return &g_context.breakpoints.at(addr);
+  m_ctx->breakpoints[addr] = { index, addr, 0, true };
+  return &m_ctx->breakpoints.at(addr);
 }
 
 }// namespace llama_debug

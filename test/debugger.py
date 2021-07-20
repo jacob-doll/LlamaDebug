@@ -1,18 +1,20 @@
 import llama_debug as ld
 
 def __main__():
-    if (not ld.debug_open("cmd.exe")):
+    debugger = ld.debugger()
+    if (not debugger.open("cmd.exe")):
         print("Could not create debugger!");
+    print("Opened process!")
     
     while True:
-        status = ld.debug_wait()
+        status = debugger.wait()
         if status is ld.STATUS_DEAD:
             break
         if status is ld.STATUS_LOAD_MODULE:
             continue
         user_input = input("> ")
 
-    ld.debug_close()
+    debugger.close()
 
 if __name__ == "__main__":
     __main__()

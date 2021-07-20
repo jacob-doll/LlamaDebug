@@ -34,14 +34,26 @@ struct ld_breakpoint
   bool enabled;
 };
 
-bool ld_debug_open(char *target);
-void ld_debug_close();
-int ld_debug_wait();
+class ld_debugger
+{
+public:
+  struct ld_debug_ctx;
+  
+  ld_debugger();
+  ~ld_debugger();
 
-std::vector<ld_module> ld_get_modules();
-uintptr_t ld_get_process_base();
-uint32_t ld_read_virtual(uintptr_t offset, uint8_t *buffer, size_t size);
-ld_breakpoint *ld_add_breakpoint(uintptr_t addr);
+  bool open(char *target);
+  void close();
+  int wait();
+
+  std::vector<ld_module> get_modules();
+  uintptr_t get_process_base();
+  uint32_t read_virtual(uintptr_t offset, uint8_t *buffer, size_t size);
+  ld_breakpoint *add_breakpoint(uintptr_t addr);
+
+private:
+  std::unique_ptr<ld_debug_ctx> m_ctx;
+};
 
 }// namespace llama_debug
 
