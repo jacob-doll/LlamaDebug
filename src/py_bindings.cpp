@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 #include <llama_debug/debugger.h>
 
 // Python Bindings
@@ -7,14 +8,19 @@ using namespace llama_debug;
 
 PYBIND11_MODULE(llama_debug, m)
 {
-  m.attr("STATUS_ERROR") = LD_STATUS_ERROR;
-  m.attr("STATUS_DEAD") = LD_STATUS_DEAD;
-  m.attr("STATUS_STEP") = LD_STATUS_STEP;
-  m.attr("STATUS_BREAKPOINT") = LD_STATUS_BREAKPOINT;
-  m.attr("STATUS_EXCEPTION") = LD_STATUS_EXCEPTION;
-  m.attr("STATUS_CREATE_PROCESS") = LD_STATUS_CREATE_PROCESS;
-  m.attr("STATUS_EXIT_PROCESS") = LD_STATUS_EXIT_PROCESS;
-  m.attr("STATUS_LOAD_MODULE") = LD_STATUS_LOAD_MODULE;
+  py::enum_<ld_debug_status>(m, "debug_status")
+    .value("ERROR", ld_debug_status::ERROR)
+    .value("DEAD", ld_debug_status::DEAD)
+    .value("STEP", ld_debug_status::STEP)
+    .value("BREAKPOINT", ld_debug_status::BREAKPOINT)
+    .value("EXCEPTION", ld_debug_status::EXCEPTION)
+    .value("CREATE_PROCESS", ld_debug_status::CREATE_PROCESS)
+    .value("EXIT_PROCESS", ld_debug_status::EXIT_PROCESS)
+    .value("LOAD_MODULE", ld_debug_status::LOAD_MODULE)
+    .export_values();
+
+  py::enum_<ld_exception_type>(m, "exception_type")
+    .export_values();
 
   py::class_<ld_module>(m, "module")
     .def_readwrite("mod_name", &ld_module::mod_name)
@@ -28,6 +34,10 @@ PYBIND11_MODULE(llama_debug, m)
     .def_readwrite("hits", &ld_breakpoint::hits)
     .def_readwrite("enabled", &ld_breakpoint::enabled);
 
+  py::class_<ld_exception>(m, "exception")
+    .def_readwrite("type", &ld_exception::type)
+    .def_readwrite("address", &ld_exception::address);
+
   py::class_<ld_debugger>(m, "debugger")
     .def(py::init<>())
     .def("open", &ld_debugger::open)
@@ -36,5 +46,11 @@ PYBIND11_MODULE(llama_debug, m)
     .def("get_modules", &ld_debugger::get_modules)
     .def("get_process_base", &ld_debugger::get_process_base)
     .def("read_virtual", &ld_debugger::read_virtual)
-    .def("add_breakpoint", &ld_debugger::add_breakpoint);
+    .def("add_breakpoint", &ld_debugger::add_breakpoint)
+    .def("set_breakpoint_cb", &ld_debugger::set_breakpoint_cb)
+    .def("set_exception_cb", &ld_debugger::set_exception_cb)
+    .def("set_process_create_cb", &ld_debugger::set_process_create_cb)
+    .def("set_process_exit_cb", &ld_debugger::set_process_exit_cb)
+    .def("set_module_load_cb", &ld_debugger::set_module_load_cb)
+    .def("set_output_cb", &ld_debugger::set_output_cb);
 }

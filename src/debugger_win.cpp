@@ -2,9 +2,6 @@
 
 #include <Windows.h>
 #include <DbgEng.h>
-#include <memory>
-#include <map>
-#include <cstdio>
 
 namespace llama_debug {
 
@@ -16,6 +13,10 @@ static DebugCreate_t DLLDebugCreate = NULL;
 
 struct ld_debugger::ld_debug_ctx
 {
+  ld_debug_ctx(ld_debugger *debugger)
+    : debugger(debugger)
+  {}
+  ld_debugger *debugger;
   uintptr_t base_address;
   uint32_t module_size;
   IDebugClient *client;
@@ -31,6 +32,10 @@ struct ld_debugger::ld_debug_ctx
 class EventCallbacks : public DebugBaseEventCallbacks
 {
 public:
+  EventCallbacks(ld_debugger::ld_debug_ctx *ctx)
+    : m_ctx(ctx)
+  {}
+
   STDMETHOD_(ULONG, AddRef)
   (
     THIS)
@@ -59,6 +64,11 @@ public:
     THIS_
       _In_ PDEBUG_BREAKPOINT Bp)
   {
+    if (m_ctx->debugger->get_breakpooint_cb()) {
+      uintptr_t address;
+      Bp->GetOffset(&address);
+      m_ctx->debugger->get_breakpooint_cb()(m_ctx->breakpoints.at(address));
+    }
     return DEBUG_STATUS_BREAK;
   }
 
@@ -86,8 +96,11 @@ public:
     _In_ ULONG64 ThreadDataOffset,
     _In_ ULONG64 StartOffset)
   {
-    // g_context.BaseAddress = (uintptr_t)BaseOffset;
-    // g_context.ModuleSize = ModuleSize;
+    m_ctx->base_address = (uintptr_t)BaseOffset;
+    m_ctx->module_size = ModuleSize;
+    if (m_ctx->debugger->get_process_create_cb()) {
+      m_ctx->debugger->get_process_create_cb()(ModuleName, BaseOffset, ModuleSize);
+    }
     return DEBUG_STATUS_BREAK;
   }
 
@@ -96,6 +109,9 @@ public:
     THIS_
       _In_ ULONG ExitCode)
   {
+    if (m_ctx->debugger->get_process_exit_cb()) {
+      m_ctx->debugger->get_process_exit_cb()(ExitCode);
+    }
     return DEBUG_STATUS_BREAK;
   }
 
@@ -110,6 +126,9 @@ public:
     _In_ ULONG CheckSum,
     _In_ ULONG TimeDateStamp)
   {
+    if (m_ctx->debugger->get_module_load_cb()) {
+      m_ctx->debugger->get_module_load_cb()(ModuleName, BaseOffset, ModuleSize);
+    }
     return DEBUG_STATUS_BREAK;
   }
 
@@ -121,11 +140,18 @@ public:
   {
     return DEBUG_STATUS_BREAK;
   }
+
+private:
+  ld_debugger::ld_debug_ctx *m_ctx;
 };
 
 class OutputCallbacks : public IDebugOutputCallbacks
 {
 public:
+  OutputCallbacks(ld_debugger::ld_debug_ctx *ctx)
+    : m_ctx(ctx)
+  {}
+
   STDMETHOD(QueryInterface)
   (
     THIS_
@@ -163,13 +189,16 @@ public:
       IN ULONG Mask,
     IN PCSTR Text)
   {
-    printf("%s", Text);
+    if (m_ctx->debugger->get_output_cb())
+    {
+      m_ctx->debugger->get_output_cb()(Text);
+    }
     return S_OK;
   }
-};
 
-static EventCallbacks g_event_callbacks;
-static OutputCallbacks g_output_callbacks;
+private:
+  ld_debugger::ld_debug_ctx *m_ctx;
+};
 
 static bool DLL_init()
 {
@@ -186,7 +215,7 @@ static bool DLL_init()
 }
 
 ld_debugger::ld_debugger()
-  : m_ctx(new ld_debugger::ld_debug_ctx)
+  : m_ctx(new ld_debugger::ld_debug_ctx(this))
 {}
 
 ld_debugger::~ld_debugger() {}
@@ -232,11 +261,14 @@ bool ld_debugger::open(char *target)
     goto fail;
   }
 
-  if (m_ctx->client->SetEventCallbacks(&g_event_callbacks) != S_OK) {
+  m_ctx->event_callbacks = new EventCallbacks(m_ctx.get());
+  m_ctx->output_callbacks = new OutputCallbacks(m_ctx.get());
+
+  if (m_ctx->client->SetEventCallbacks(m_ctx->event_callbacks) != S_OK) {
     goto fail;
   }
 
-  if (m_ctx->client->SetOutputCallbacks(&g_output_callbacks) != S_OK) {
+  if (m_ctx->client->SetOutputCallbacks(m_ctx->output_callbacks) != S_OK) {
     goto fail;
   }
 
@@ -262,6 +294,14 @@ fail:
 
 void ld_debugger::close()
 {
+  if (m_ctx->event_callbacks) {
+    delete m_ctx->event_callbacks;
+  }
+
+  if (m_ctx->output_callbacks) {
+    delete m_ctx->output_callbacks;
+  }
+
   if (m_ctx->client) {
     m_ctx->client->EndSession(DEBUG_END_PASSIVE);
   }
@@ -287,7 +327,7 @@ void ld_debugger::close()
   }
 }
 
-int ld_debugger::wait()
+ld_debug_status ld_debugger::wait()
 {
   HRESULT status;
   while ((status = m_ctx->control->WaitForEvent(
@@ -297,7 +337,7 @@ int ld_debugger::wait()
     ;
 
   if (FAILED(status))
-    return LD_STATUS_DEAD;
+    return DEAD;
 
   ULONG type, process_id, thread_id;
   m_ctx->control->GetLastEventInformation(
@@ -311,26 +351,27 @@ int ld_debugger::wait()
     0,
     NULL);
 
-  int ret;
+  ld_debug_status ret;
 
+#undef ERROR
   switch (type) {
   case DEBUG_EVENT_BREAKPOINT:
-    ret = LD_STATUS_BREAKPOINT;
+    ret = BREAKPOINT;
     break;
   case DEBUG_EVENT_EXCEPTION:
-    ret = LD_STATUS_EXCEPTION;
+    ret = EXCEPTION;
     break;
   case DEBUG_EVENT_CREATE_PROCESS:
-    ret = LD_STATUS_CREATE_PROCESS;
+    ret = CREATE_PROCESS;
     break;
   case DEBUG_EVENT_EXIT_PROCESS:
-    ret = LD_STATUS_EXIT_PROCESS;
+    ret = EXIT_PROCESS;
     break;
   case DEBUG_EVENT_LOAD_MODULE:
-    ret = LD_STATUS_LOAD_MODULE;
+    ret = LOAD_MODULE;
     break;
   default:
-    ret = LD_STATUS_ERROR;
+    ret = ERROR;
   }
 
   return ret;
@@ -410,6 +451,36 @@ ld_breakpoint *ld_debugger::add_breakpoint(uintptr_t addr)
   bp->SetOffset(addr);
   m_ctx->breakpoints[addr] = { index, addr, 0, true };
   return &m_ctx->breakpoints.at(addr);
+}
+
+void ld_debugger::set_breakpoint_cb(const breakpoint_cb &callback)
+{
+  m_breakpoint_cb = callback;
+}
+
+void ld_debugger::set_exception_cb(const exception_cb &callback)
+{
+  m_exception_cb = callback;
+}
+
+void ld_debugger::set_process_create_cb(const process_create_cb &callback)
+{
+  m_process_create_cb = callback;
+}
+
+void ld_debugger::set_process_exit_cb(const process_exit_cb &callback)
+{
+  m_process_exit_cb = callback;
+}
+
+void ld_debugger::set_module_load_cb(const module_load_cb &callback)
+{
+  m_module_load_cb = callback;
+}
+
+void ld_debugger::set_output_cb(const output_cb &callback)
+{
+  m_output_cb = callback;
 }
 
 }// namespace llama_debug
