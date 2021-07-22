@@ -70,6 +70,8 @@ public:
   uint32_t read_virtual(uintptr_t offset, uint8_t *buffer, size_t size);
   ld_breakpoint *add_breakpoint(uintptr_t addr);
 
+  bool is_open() { return m_open; }
+
   void set_breakpoint_cb(const breakpoint_cb &callback);
   void set_exception_cb(const exception_cb &callback);
   void set_process_create_cb(const process_create_cb &callback);
@@ -87,6 +89,7 @@ public:
 
 private:
   std::unique_ptr<ld_debug_ctx> m_ctx;
+  bool m_open;
 
   breakpoint_cb m_breakpoint_cb;
   exception_cb m_exception_cb;

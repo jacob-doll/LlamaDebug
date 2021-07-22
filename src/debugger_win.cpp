@@ -215,7 +215,8 @@ static bool DLL_init()
 }
 
 ld_debugger::ld_debugger()
-  : m_ctx(new ld_debugger::ld_debug_ctx(this))
+  : m_ctx(new ld_debugger::ld_debug_ctx(this)),
+    m_open(false)
 {}
 
 ld_debugger::~ld_debugger() {}
@@ -285,6 +286,8 @@ bool ld_debugger::open(char *target)
       != S_OK) {
     return false;
   }
+
+  m_open = true;
   return true;
 
 fail:
@@ -325,6 +328,8 @@ void ld_debugger::close()
   if (m_ctx->client) {
     m_ctx->client->Release();
   }
+
+  m_open = false;
 }
 
 ld_debug_status ld_debugger::wait()
