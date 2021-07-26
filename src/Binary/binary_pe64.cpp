@@ -45,21 +45,21 @@ bool binary_pe64::validate(const uint8_t *buffer, uint32_t size)
 
 bool binary_pe64::from_file(const std::string &filename)
 {
-//   std::ifstream BinaryFile(filename, std::ios::in | std::ios::binary);
-//   if (!BinaryFile.is_open()) return false;
+  //   std::ifstream BinaryFile(filename, std::ios::in | std::ios::binary);
+  //   if (!BinaryFile.is_open()) return false;
 
-//   BinaryFile.read((char *)(&m_DosHeader), sizeof(m_DosHeader));
-//   BinaryFile.seekg(m_DosHeader.e_lfanew, std::ios::beg);
-//   BinaryFile.read((char *)(&m_Headers), sizeof(m_Headers));
+  //   BinaryFile.read((char *)(&m_DosHeader), sizeof(m_DosHeader));
+  //   BinaryFile.seekg(m_DosHeader.e_lfanew, std::ios::beg);
+  //   BinaryFile.read((char *)(&m_Headers), sizeof(m_Headers));
 
-//   m_SectionHeaders = new PEImageSectionHeader[m_Headers.FileHeader.NumberOfSections];
+  //   m_SectionHeaders = new PEImageSectionHeader[m_Headers.FileHeader.NumberOfSections];
 
-//   for (uint16_t i = 0; i < m_Headers.FileHeader.NumberOfSections; i++) {
-//     BinaryFile.read((char *)(&m_SectionHeaders[i]), sizeof(PEImageSectionHeader));
-//   }
+  //   for (uint16_t i = 0; i < m_Headers.FileHeader.NumberOfSections; i++) {
+  //     BinaryFile.read((char *)(&m_SectionHeaders[i]), sizeof(PEImageSectionHeader));
+  //   }
 
 
-//   BinaryFile.close();
+  //   BinaryFile.close();
   return true;
 }
 
@@ -72,6 +72,8 @@ bool binary_pe64::from_buffer(const uint8_t *buffer, uint32_t size)
   uint32_t index = m_dos_headers.e_lfanew;
   std::memcpy(&m_headers, buffer + index, sizeof(m_headers));
   index += sizeof(m_headers);
+
+  m_entry_point = m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
 
   m_section_headers = new PEImageSectionHeader[m_headers.FileHeader.NumberOfSections];
 
@@ -88,11 +90,6 @@ void binary_pe64::debug_print()
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
     printf("%.8s\n", m_section_headers[i].Name);
   }
-}
-
-uintptr_t binary_pe64::entry_point()
-{
-  return m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
 }
 
 }// namespace llama_debug

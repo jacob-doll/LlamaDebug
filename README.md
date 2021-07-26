@@ -1,3 +1,4 @@
 # TODO
 
-observer patter for debug events
+Process creation and modification library
+Binary analysis

@@ -74,6 +74,8 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   std::memcpy(&m_headers, buffer + index, sizeof(m_headers));
   index += sizeof(m_headers);
 
+  m_entry_point = m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
+
   m_section_headers = new PEImageSectionHeader[m_headers.FileHeader.NumberOfSections];
 
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
@@ -89,11 +91,6 @@ void binary_pe::debug_print()
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
     printf("%.8s\n", m_section_headers[i].Name);
   }
-}
-
-uintptr_t binary_pe::entry_point()
-{
-  return m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
 }
 
 }// namespace llama_debug
