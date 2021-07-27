@@ -1,5 +1,4 @@
 #include <llama_debug/binary/binary_pe.h>
-#include <llama_debug/binary/mmap_file.h>
 #include <fstream>
 #include <cstdio>
 
@@ -15,11 +14,6 @@ static uint32_t rva_to_physical(PEImageSectionHeader *sections, uint16_t num_sec
     }
   }
   return rva;
-}
-
-binary_pe::binary_pe(const std::string &filename)
-{
-  from_file(filename);
 }
 
 binary_pe::binary_pe(const uint8_t *buffer, uint32_t size)
@@ -54,20 +48,9 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
   return false;
 }
 
-bool binary_pe::from_file(const std::string &filename)
-{
-  mmap_file file(filename);
-  if (from_buffer(file.ptr(), file.size())) {
-    file.close();
-    return true;
-  }
-  return false;
-}
-
 bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 {
   if (!validate(buffer, size)) return false;
-
 
   std::memcpy(&m_dos_headers, buffer, sizeof(m_dos_headers));
   uint32_t index = m_dos_headers.e_lfanew;

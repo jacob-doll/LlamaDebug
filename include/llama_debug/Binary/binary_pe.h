@@ -9,7 +9,6 @@ namespace llama_debug {
 class binary_pe : public binary
 {
 public:
-  binary_pe(const std::string &filename);
   binary_pe(const uint8_t *buffer, uint32_t size);
   ~binary_pe();
 
@@ -18,7 +17,6 @@ public:
   virtual void debug_print() override;
 
 private:
-  bool from_file(const std::string &filename);
   bool from_buffer(const uint8_t *buffer, uint32_t size);
 
 private:

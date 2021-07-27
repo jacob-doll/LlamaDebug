@@ -1,5 +1,4 @@
 #include <llama_debug/binary/binary_pe64.h>
-#include <llama_debug/binary/mmap_file.h>
 #include <fstream>
 #include <cstdio>
 
@@ -15,11 +14,6 @@ static uint32_t rva_to_physical(PEImageSectionHeader *sections, uint16_t num_sec
     }
   }
   return rva;
-}
-
-binary_pe64::binary_pe64(const std::string &filename)
-{
-  from_file(filename);
 }
 
 binary_pe64::binary_pe64(const uint8_t *buffer, uint32_t size)
@@ -50,16 +44,6 @@ bool binary_pe64::validate(const uint8_t *buffer, uint32_t size)
     uint16_t optional_magic;
     std::memcpy(&optional_magic, buffer + exe_offset + 0x18, sizeof(optional_magic));
     if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) return true;
-  }
-  return false;
-}
-
-bool binary_pe64::from_file(const std::string &filename)
-{
-  mmap_file file(filename);
-  if (from_buffer(file.ptr(), file.size())) {
-    file.close();
-    return true;
   }
   return false;
 }
