@@ -5,17 +5,19 @@ namespace llama_debug {
 mmap_file::mmap_file(const std::string &filename)
 {
   if (!init(filename)) {
-    throw "Could not map file!";
+    fprintf(stderr, "Couldn't create file\n");
   }
 }
 
 bool mmap_file::init(const std::string &filename)
 {
 #ifdef _WIN32
-  m_file = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  m_file = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (m_file == INVALID_HANDLE_VALUE) {
     return false;
   }
+
+  m_size = GetFileSize(m_file, NULL);
 
   m_map_file = CreateFileMapping(m_file, NULL, PAGE_READONLY, 0, 0, NULL);
   if (m_map_file == 0) {

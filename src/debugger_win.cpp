@@ -189,8 +189,7 @@ public:
       IN ULONG Mask,
     IN PCSTR Text)
   {
-    if (m_ctx->debugger->get_output_cb())
-    {
+    if (m_ctx->debugger->get_output_cb()) {
       m_ctx->debugger->get_output_cb()(Text);
     }
     return S_OK;

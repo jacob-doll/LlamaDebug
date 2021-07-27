@@ -1,4 +1,5 @@
 #include <llama_debug/binary/binary_pe.h>
+#include <llama_debug/binary/mmap_file.h>
 #include <fstream>
 #include <cstdio>
 
@@ -14,6 +15,16 @@ static uint32_t rva_to_physical(PEImageSectionHeader *sections, uint16_t num_sec
     }
   }
   return rva;
+}
+
+binary_pe::binary_pe(const std::string &filename)
+{
+  from_file(filename);
+}
+
+binary_pe::binary_pe(const uint8_t *buffer, uint32_t size)
+{
+  from_buffer(buffer, size);
 }
 
 binary_pe::~binary_pe()
@@ -45,23 +56,12 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 
 bool binary_pe::from_file(const std::string &filename)
 {
-  // std::ifstream BinaryFile(Filename, std::ios::in|std::ios::binary);
-  // if (!BinaryFile.is_open()) return false;
-
-  // BinaryFile.read((char*)(&m_DosHeader), sizeof(m_DosHeader));
-  // BinaryFile.seekg(m_DosHeader.e_lfanew, std::ios::beg);
-  // BinaryFile.read((char*)(&m_Headers), sizeof(m_Headers));
-
-  // m_SectionHeaders = new PEImageSectionHeader[m_Headers.FileHeader.NumberOfSections];
-
-  // for (uint16_t i = 0; i < m_Headers.FileHeader.NumberOfSections; i++)
-  // {
-  //     BinaryFile.read((char*)(&m_SectionHeaders[i]), sizeof(PEImageSectionHeader));
-  // }
-
-
-  // BinaryFile.close();
-  return true;
+  mmap_file file(filename);
+  if (from_buffer(file.ptr(), file.size())) {
+    file.close();
+    return true;
+  }
+  return false;
 }
 
 bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
@@ -75,6 +75,7 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   index += sizeof(m_headers);
 
   m_entry_point = m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
+  m_base_addr = m_headers.OptionalHeader.ImageBase;
 
   m_section_headers = new PEImageSectionHeader[m_headers.FileHeader.NumberOfSections];
 
