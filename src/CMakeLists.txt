@@ -4,6 +4,7 @@ set(SRCS
     binary/binary.cpp
     binary/binary_pe.cpp
     binary/binary_pe64.cpp
+    binary/mmap_file.cpp
 )
 
 if (WIN32)
