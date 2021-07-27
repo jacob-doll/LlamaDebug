@@ -24,15 +24,21 @@ struct symbol
   uintptr_t address;
 };
 
+enum binary_type {
+  BINARY_PE,
+  BINARY_PE64
+};
+
 class binary
 {
 public:
   binary() = default;
 
-  static binary* from_file(const std::string &filename);
-  static binary* from_buffer(const uint8_t *buffer, uint32_t size);
+  static binary *from_file(const std::string &filename);
+  static binary *from_buffer(const uint8_t *buffer, uint32_t size);
 
   virtual void debug_print() = 0;
+  virtual binary_type type() = 0;
 
   uintptr_t base_addr() { return m_base_addr; }
   uintptr_t entry_point() { return m_entry_point; }

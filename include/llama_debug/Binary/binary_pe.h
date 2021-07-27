@@ -15,6 +15,7 @@ public:
   static bool validate(const uint8_t *buffer, uint32_t size);
 
   virtual void debug_print() override;
+  virtual binary_type type() override { return BINARY_PE; }
 
 private:
   bool from_buffer(const uint8_t *buffer, uint32_t size);

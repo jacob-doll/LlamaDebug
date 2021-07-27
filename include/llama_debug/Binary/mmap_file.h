@@ -14,7 +14,7 @@ class mmap_file
 {
 public:
   mmap_file(const std::string &filename);
-  
+
   void close();
 
   uint8_t *ptr() { return m_ptr; }

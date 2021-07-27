@@ -73,6 +73,9 @@ bool binary_pe64::from_buffer(const uint8_t *buffer, uint32_t size)
 
 void binary_pe64::debug_print()
 {
+  printf("Machine: %x\n", m_headers.FileHeader.Machine);
+  printf("Entry point: %x\n", m_headers.OptionalHeader.AddressOfEntryPoint);
+  printf("Base Addr: %llx\n", m_headers.OptionalHeader.ImageBase);
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
     printf("%.8s\n", m_section_headers[i].Name);
   }

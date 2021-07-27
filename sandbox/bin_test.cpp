@@ -6,8 +6,9 @@
 int main()
 {
   using namespace llama_debug;
-  binary* bin = binary::from_file("C:\\Windows\\System32\\cmd.exe");
-  // bin->debug_print();
+  binary *bin = binary::from_file("C:\\Windows\\System32\\cmd.exe");
+  printf("%s\n", (bin->type() == BINARY_PE) ? "PE" : "PE64");
+  bin->debug_print();
   printf("entry: %llx\n", bin->entry_point());
   printf("base: %llx\n", bin->base_addr());
   delete bin;

@@ -1,5 +1,4 @@
 #include <llama_debug/binary/binary_pe.h>
-#include <fstream>
 #include <cstdio>
 
 namespace llama_debug {
@@ -43,6 +42,7 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
     // Check that executable is 32-Bit
     uint16_t optional_magic;
     std::memcpy(&optional_magic, buffer + exe_offset + 0x18, sizeof(optional_magic));
+    printf("optional_magic: %x\n", optional_magic);
     if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) return true;
   }
   return false;
@@ -72,6 +72,7 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 
 void binary_pe::debug_print()
 {
+  printf("Machine: %x\n", m_headers.FileHeader.Machine);
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
     printf("%.8s\n", m_section_headers[i].Name);
   }
