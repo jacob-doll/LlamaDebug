@@ -37,7 +37,6 @@ public:
   static binary *from_file(const std::string &filename);
   static binary *from_buffer(const uint8_t *buffer, uint32_t size);
 
-  virtual void debug_print() = 0;
   virtual binary_type type() = 0;
 
   uintptr_t base_addr() { return m_base_addr; }
