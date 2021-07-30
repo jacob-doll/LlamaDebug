@@ -52,29 +52,45 @@ bool binary_pe64::from_buffer(const uint8_t *buffer, uint32_t size)
 {
   if (!validate(buffer, size)) return false;
 
+  uint32_t offset = 0;
+  offset += parse_headers(buffer, offset);
+  parse_sections(buffer, offset);
+  parse_imports(buffer);
 
+  return true;
+}
+
+uint32_t binary_pe64::parse_headers(const uint8_t *buffer, uint32_t offset)
+{
   std::memcpy(&m_dos_headers, buffer, sizeof(m_dos_headers));
-  uint32_t index = m_dos_headers.e_lfanew;
-  std::memcpy(&m_headers, buffer + index, sizeof(m_headers));
-  index += sizeof(m_headers);
+  offset = m_dos_headers.e_lfanew;
+  std::memcpy(&m_headers, buffer + offset, sizeof(m_headers));
+  offset += sizeof(m_headers);
 
   m_entry_point = (uint64_t)m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
   m_base_addr = m_headers.OptionalHeader.ImageBase;
+  return offset;
+}
 
+void binary_pe64::parse_sections(const uint8_t *buffer, uint32_t offset)
+{
   m_section_headers = new PEImageSectionHeader[m_headers.FileHeader.NumberOfSections];
 
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
-    std::memcpy(&m_section_headers[i], buffer + index, sizeof(PEImageSectionHeader));
+    std::memcpy(&m_section_headers[i], buffer + offset, sizeof(PEImageSectionHeader));
     m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
       m_section_headers[i].SizeOfRawData,
       m_section_headers[i].Misc.VirtualSize,
       m_section_headers[i].PointerToRawData,
       m_section_headers[i].VirtualAddress,
       0 });
-    index += sizeof(PEImageSectionHeader);
+    offset += sizeof(PEImageSectionHeader);
   }
+}
 
-  return true;
+void binary_pe64::parse_imports(const uint8_t *buffer)
+{
+
 }
 
 }// namespace llama_debug

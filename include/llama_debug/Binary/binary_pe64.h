@@ -18,6 +18,9 @@ public:
 
 private:
   bool from_buffer(const uint8_t *buffer, uint32_t size);
+  uint32_t parse_headers(const uint8_t *buffer, uint32_t offset);
+  void parse_sections(const uint8_t *buffer, uint32_t offset);
+  void parse_imports(const uint8_t *buffer);
 
 private:
   PEImageDosHeader m_dos_headers;
