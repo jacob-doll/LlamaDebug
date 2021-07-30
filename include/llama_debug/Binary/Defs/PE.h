@@ -8,7 +8,8 @@
 #define IMAGE_OS2_SIGNATURE_LE 0x454C// LE
 #define IMAGE_VXD_SIGNATURE 0x454C// LE
 #define IMAGE_NT_SIGNATURE 0x00004550// PE00
-struct PEImageDosHeader
+
+struct PE_image_dos_header
 {
   uint16_t e_magic;// Magic number
   uint16_t e_cblp;// Bytes on last page of file
@@ -35,9 +36,7 @@ struct PEImageDosHeader
 // File Header
 // ========================================== //
 
-#define IMAGE_FILE_HEADER(x) x + 0x000000F4
-
-struct PEImageFileHeader
+struct PE_image_file_header
 {
   uint16_t Machine;
   uint16_t NumberOfSections;
@@ -105,7 +104,7 @@ struct PEImageFileHeader
 // Optional Header
 // ========================================== //
 
-struct PEImageDataDirectory
+struct PE_image_data_directory
 {
   uint32_t VirtualAddress;
   uint32_t Size;
@@ -113,7 +112,7 @@ struct PEImageDataDirectory
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
 
-struct PEImageOptionalHeader32
+struct PE32_image_optional_header
 {
   /* Standard fields. */
   uint16_t Magic;
@@ -149,10 +148,10 @@ struct PEImageOptionalHeader32
   uint32_t SizeOfHeapCommit;
   uint32_t LoaderFlags;
   uint32_t NumberOfRvaAndSizes;
-  PEImageDataDirectory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+  PE_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 };
 
-struct PEImageOptionalHeader64
+struct PE64_image_optional_header
 {
   /* Standard fields. */
   uint16_t Magic;
@@ -187,7 +186,7 @@ struct PEImageOptionalHeader64
   uint64_t SizeOfHeapCommit;
   uint32_t LoaderFlags;
   uint32_t NumberOfRvaAndSizes;
-  PEImageDataDirectory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+  PE_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 };
 
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
@@ -249,18 +248,18 @@ struct PEImageOptionalHeader64
 
 #define IMAGE_NT_HEADERS(x) x + 0x000000F0
 
-struct PEImageNTHeaders32
+struct PE32_image_nt_headers
 {
   uint32_t Signature;
-  PEImageFileHeader FileHeader;
-  PEImageOptionalHeader32 OptionalHeader;
+  PE_image_file_header FileHeader;
+  PE32_image_optional_header OptionalHeader;
 };
 
-struct PEImageNTHeaders64
+struct PE64_image_nt_headers
 {
   uint32_t Signature;
-  PEImageFileHeader FileHeader;
-  PEImageOptionalHeader64 OptionalHeader;
+  PE_image_file_header FileHeader;
+  PE64_image_optional_header OptionalHeader;
 };
 
 // ========================================== //
@@ -269,7 +268,7 @@ struct PEImageNTHeaders64
 
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
-struct PEImageSectionHeader
+struct PE_image_section_header
 {
   uint8_t Name[IMAGE_SIZEOF_SHORT_NAME];
   union {

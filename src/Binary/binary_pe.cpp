@@ -3,7 +3,7 @@
 
 namespace llama_debug {
 
-static uint32_t rva_to_physical(PEImageSectionHeader *sections, uint16_t num_sections, uint32_t rva)
+static uint32_t rva_to_physical(PE_image_section_header *sections, uint16_t num_sections, uint32_t rva)
 {
   for (uint16_t i = 0; i < num_sections; i++) {
     uint32_t section_virtual_address = sections[i].VirtualAddress;
@@ -28,7 +28,7 @@ binary_pe::~binary_pe()
 bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
-  if (size < sizeof(PEImageDosHeader)) return false;
+  if (size < sizeof(PE_image_dos_header)) return false;
   // Check Dos Signature
   uint16_t dos_signature;
   std::memcpy(&dos_signature, buffer, sizeof(dos_signature));
@@ -59,17 +59,17 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   m_entry_point = m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
   m_base_addr = m_headers.OptionalHeader.ImageBase;
 
-  m_section_headers = new PEImageSectionHeader[m_headers.FileHeader.NumberOfSections];
+  m_section_headers = new PE_image_section_header[m_headers.FileHeader.NumberOfSections];
 
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
-    std::memcpy(&m_section_headers[i], buffer + index, sizeof(PEImageSectionHeader));
+    std::memcpy(&m_section_headers[i], buffer + index, sizeof(PE_image_section_header));
     m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
       m_section_headers[i].SizeOfRawData,
       m_section_headers[i].Misc.VirtualSize,
       m_section_headers[i].PointerToRawData,
       m_section_headers[i].VirtualAddress,
       0 });
-    index += sizeof(PEImageSectionHeader);
+    index += sizeof(PE_image_section_header);
   }
 
   return true;

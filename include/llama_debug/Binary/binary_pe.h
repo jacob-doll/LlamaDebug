@@ -20,9 +20,9 @@ private:
   bool from_buffer(const uint8_t *buffer, uint32_t size);
 
 private:
-  PEImageDosHeader m_dos_headers;
-  PEImageNTHeaders32 m_headers;
-  PEImageSectionHeader *m_section_headers;
+  PE_image_dos_header m_dos_headers;
+  PE32_image_nt_headers m_headers;
+  PE_image_section_header *m_section_headers;
 };
 
 }// namespace llama_debug

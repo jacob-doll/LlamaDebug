@@ -23,9 +23,9 @@ private:
   void parse_imports(const uint8_t *buffer);
 
 private:
-  PEImageDosHeader m_dos_headers;
-  PEImageNTHeaders64 m_headers;
-  PEImageSectionHeader *m_section_headers;
+  PE_image_dos_header m_dos_headers;
+  PE64_image_nt_headers m_headers;
+  PE_image_section_header *m_section_headers;
 };
 
 }// namespace llama_debug
