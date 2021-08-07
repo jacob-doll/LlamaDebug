@@ -326,4 +326,34 @@ struct PE_image_section_header
 #define IMAGE_SCN_MEM_READ 0x40000000
 #define IMAGE_SCN_MEM_WRITE 0x80000000
 
+struct PE_image_export_directory
+{
+  uint32_t Characteristics;
+  uint32_t TimeDateStamp;
+  uint16_t MajorVersion;
+  uint16_t MinorVersion;
+  uint32_t Name;
+  uint32_t Base;
+  uint32_t NumberOfFunctions;
+  uint32_t NumberOfNames;
+  uint32_t AddressOfFunctions;
+  uint32_t AddressOfNames;
+  uint32_t AddressOfNameOrdinals;
+};
+
+struct PE_image_import_directory
+{
+  uint32_t OriginalFirstThunk; /* Import Lookup Table RVA */
+  uint32_t TimeDateStamp;
+  uint32_t ForwarderChain;
+  uint32_t Name;
+  uint32_t FirstThunk; /* Import Address Table RVA */
+};
+
+struct PE_image_hint_name
+{
+  uint16_t Hint;
+  char Name[];
+};
+
 #endif// LLAMADEBUG_PE_H

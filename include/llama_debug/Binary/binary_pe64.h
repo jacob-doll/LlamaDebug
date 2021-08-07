@@ -17,10 +17,11 @@ public:
   virtual binary_type type() override { return BINARY_PE64; }
 
 private:
+  uint32_t rva_to_physical(uint32_t rva);
   bool from_buffer(const uint8_t *buffer, uint32_t size);
   uint32_t parse_headers(const uint8_t *buffer, uint32_t offset);
   void parse_sections(const uint8_t *buffer, uint32_t offset);
-  void parse_imports(const uint8_t *buffer);
+  void parse_imports(const uint8_t *buffer, uint32_t offset);
 
 private:
   PE_image_dos_header m_dos_headers;
