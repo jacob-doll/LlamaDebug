@@ -1,4 +1,4 @@
-#include <llama_debug/binary/binary_pe.h>
+#include <llama_debug/binary/pe/binary_pe.h>
 #include <cstdio>
 
 namespace llama_debug {

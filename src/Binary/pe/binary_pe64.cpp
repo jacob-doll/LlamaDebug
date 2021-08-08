@@ -1,4 +1,4 @@
-#include <llama_debug/binary/binary_pe64.h>
+#include <llama_debug/binary/pe/binary_pe64.h>
 #include <fstream>
 #include <cstdio>
 
@@ -93,10 +93,11 @@ void binary_pe64::parse_sections(const uint8_t *buffer, uint32_t offset)
 
 void binary_pe64::parse_imports(const uint8_t *buffer, uint32_t offset)
 {
-  printf("Parsing imports!\n");
   while (true) {
     PE_image_import_directory *import_directory = (PE_image_import_directory *)(buffer + offset);
     if (!import_directory->OriginalFirstThunk) break;
+
+    printf("%x\n", import_directory->ForwarderChain);
 
     uint32_t name_offset = rva_to_physical(import_directory->Name);
     char *dll_name = (char *)(buffer + name_offset);

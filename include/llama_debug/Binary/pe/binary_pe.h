@@ -2,7 +2,7 @@
 #define LLAMADEBUG_BINARYPE_H
 
 #include <llama_debug/binary/binary.h>
-#include <llama_debug/binary/defs/PE.h>
+#include <llama_debug/binary/pe/defs.h>
 
 namespace llama_debug {
 
