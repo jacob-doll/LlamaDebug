@@ -1,19 +1,8 @@
 #include <llama_debug/binary/pe/binary_pe.h>
+#include <fstream>
 #include <cstdio>
 
 namespace llama_debug {
-
-static uint32_t rva_to_physical(PE_image_section_header *sections, uint16_t num_sections, uint32_t rva)
-{
-  for (uint16_t i = 0; i < num_sections; i++) {
-    uint32_t section_virtual_address = sections[i].VirtualAddress;
-    uint32_t section_virtual_size = sections[i].Misc.VirtualSize;
-    if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
-      return sections[i].PointerToRawData + (rva - section_virtual_address);
-    }
-  }
-  return rva;
-}
 
 binary_pe::binary_pe(const uint8_t *buffer, uint32_t size)
 {
@@ -28,7 +17,7 @@ binary_pe::~binary_pe()
 bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
-  if (size < sizeof(PE_image_dos_header)) return false;
+  if (size < sizeof(pe_image_dos_header)) return false;
   // Check Dos Signature
   uint16_t dos_signature;
   std::memcpy(&dos_signature, buffer, sizeof(dos_signature));
@@ -39,40 +28,103 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
     uint32_t nt_signature;
     std::memcpy(&nt_signature, buffer + exe_offset, sizeof(nt_signature));
     if (nt_signature != IMAGE_NT_SIGNATURE) return false;
-    // Check that executable is 32-Bit
+    // Check that executable is 64-Bit
     uint16_t optional_magic;
     std::memcpy(&optional_magic, buffer + exe_offset + 0x18, sizeof(optional_magic));
-    if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) return true;
+    if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) return true;
   }
   return false;
+}
+
+uint32_t binary_pe::rva_to_physical(uint32_t rva)
+{
+  for (uint16_t i = 0; i < m_headers.OptionalHeader.NumberOfRvaAndSizes; i++) {
+    uint32_t section_virtual_address = m_section_headers[i].VirtualAddress;
+    uint32_t section_virtual_size = m_section_headers[i].Misc.VirtualSize;
+    if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
+      return m_section_headers[i].PointerToRawData + (rva - section_virtual_address);
+    }
+  }
+  return rva;
 }
 
 bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 {
   if (!validate(buffer, size)) return false;
 
+  uint32_t offset = 0;
+  offset += parse_headers(buffer, offset);
+  parse_sections(buffer, offset);
+
+  const pe_image_data_directory import_directory = m_headers.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+  offset = rva_to_physical(import_directory.VirtualAddress);
+  parse_imports(buffer, offset);
+
+  return true;
+}
+
+uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
+{
   std::memcpy(&m_dos_headers, buffer, sizeof(m_dos_headers));
-  uint32_t index = m_dos_headers.e_lfanew;
-  std::memcpy(&m_headers, buffer + index, sizeof(m_headers));
-  index += sizeof(m_headers);
+  offset = m_dos_headers.e_lfanew;
+  std::memcpy(&m_headers, buffer + offset, sizeof(m_headers));
+  offset += sizeof(m_headers);
 
-  m_entry_point = m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
+  m_entry_point = (uint64_t)m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
   m_base_addr = m_headers.OptionalHeader.ImageBase;
+  return offset;
+}
 
-  m_section_headers = new PE_image_section_header[m_headers.FileHeader.NumberOfSections];
+void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
+{
+  m_section_headers = new pe_image_section_header[m_headers.FileHeader.NumberOfSections];
 
   for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
-    std::memcpy(&m_section_headers[i], buffer + index, sizeof(PE_image_section_header));
+    std::memcpy(&m_section_headers[i], buffer + offset, sizeof(pe_image_section_header));
     m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
       m_section_headers[i].SizeOfRawData,
       m_section_headers[i].Misc.VirtualSize,
       m_section_headers[i].PointerToRawData,
       m_section_headers[i].VirtualAddress,
       0 });
-    index += sizeof(PE_image_section_header);
+    offset += sizeof(pe_image_section_header);
   }
+}
 
-  return true;
+void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
+{
+  while (true) {
+    pe_image_import_directory *import_directory = (pe_image_import_directory *)(buffer + offset);
+    if (!import_directory->OriginalFirstThunk) break;
+
+    printf("%x\n", import_directory->ForwarderChain);
+
+    uint32_t name_offset = rva_to_physical(import_directory->Name);
+    char *dll_name = (char *)(buffer + name_offset);
+
+    uint32_t lookup_table_offset = rva_to_physical(import_directory->OriginalFirstThunk);
+    uint32_t address_table_offset = rva_to_physical(import_directory->FirstThunk);
+
+    while (true) {
+      uint64_t image_thunk = *((uint64_t *)(buffer + lookup_table_offset));
+      uint64_t address = *((uint64_t *)(buffer + address_table_offset));
+      if (!image_thunk) break;
+      if (!(image_thunk & 0x8000000000000000)) {
+        name_offset = rva_to_physical((uint32_t)(image_thunk));
+        pe_image_hint_name *hint_name = (pe_image_hint_name *)(buffer + name_offset);
+        m_symbols.emplace_back(symbol{
+          dll_name,
+          hint_name->Name,
+          address
+        });
+      }
+
+      lookup_table_offset += sizeof(uint64_t);
+      address_table_offset += sizeof(uint64_t);
+    }
+
+    offset += sizeof(pe_image_import_directory);
+  }
 }
 
 }// namespace llama_debug

@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_BINARYPE_H
-#define LLAMADEBUG_BINARYPE_H
+#ifndef LLAMADEBUG_BINARYPE64_H
+#define LLAMADEBUG_BINARYPE64_H
 
 #include <llama_debug/binary/binary.h>
 #include <llama_debug/binary/pe/defs.h>
@@ -14,17 +14,21 @@ public:
 
   static bool validate(const uint8_t *buffer, uint32_t size);
 
-  virtual binary_type type() override { return BINARY_PE; }
+  virtual binary_type type() override { return BINARY_PE64; }
 
 private:
+  uint32_t rva_to_physical(uint32_t rva);
   bool from_buffer(const uint8_t *buffer, uint32_t size);
+  uint32_t parse_headers(const uint8_t *buffer, uint32_t offset);
+  void parse_sections(const uint8_t *buffer, uint32_t offset);
+  void parse_imports(const uint8_t *buffer, uint32_t offset);
 
 private:
-  PE_image_dos_header m_dos_headers;
-  PE32_image_nt_headers m_headers;
-  PE_image_section_header *m_section_headers;
+  pe_image_dos_header m_dos_headers;
+  pe64_image_nt_headers m_headers;
+  pe_image_section_header *m_section_headers;
 };
 
 }// namespace llama_debug
 
-#endif// LLAMADEBUG_BINARYPE_H
+#endif// LLAMADEBUG_BINARYPE64_H

@@ -9,7 +9,7 @@
 #define IMAGE_VXD_SIGNATURE 0x454C// LE
 #define IMAGE_NT_SIGNATURE 0x00004550// PE00
 
-struct PE_image_dos_header
+struct pe_image_dos_header
 {
   uint16_t e_magic;// Magic number
   uint16_t e_cblp;// Bytes on last page of file
@@ -36,7 +36,7 @@ struct PE_image_dos_header
 // File Header
 // ========================================== //
 
-struct PE_image_file_header
+struct pe_image_file_header
 {
   uint16_t Machine;
   uint16_t NumberOfSections;
@@ -104,7 +104,7 @@ struct PE_image_file_header
 // Optional Header
 // ========================================== //
 
-struct PE_image_data_directory
+struct pe_image_data_directory
 {
   uint32_t VirtualAddress;
   uint32_t Size;
@@ -112,7 +112,7 @@ struct PE_image_data_directory
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
 
-struct PE32_image_optional_header
+struct pe32_image_optional_header
 {
   /* Standard fields. */
   uint16_t Magic;
@@ -148,10 +148,10 @@ struct PE32_image_optional_header
   uint32_t SizeOfHeapCommit;
   uint32_t LoaderFlags;
   uint32_t NumberOfRvaAndSizes;
-  PE_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+  pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 };
 
-struct PE64_image_optional_header
+struct pe64_image_optional_header
 {
   /* Standard fields. */
   uint16_t Magic;
@@ -186,7 +186,7 @@ struct PE64_image_optional_header
   uint64_t SizeOfHeapCommit;
   uint32_t LoaderFlags;
   uint32_t NumberOfRvaAndSizes;
-  PE_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+  pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
 };
 
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
@@ -248,18 +248,18 @@ struct PE64_image_optional_header
 
 #define IMAGE_NT_HEADERS(x) x + 0x000000F0
 
-struct PE32_image_nt_headers
+struct pe32_image_nt_headers
 {
   uint32_t Signature;
-  PE_image_file_header FileHeader;
-  PE32_image_optional_header OptionalHeader;
+  pe_image_file_header FileHeader;
+  pe32_image_optional_header OptionalHeader;
 };
 
-struct PE64_image_nt_headers
+struct pe64_image_nt_headers
 {
   uint32_t Signature;
-  PE_image_file_header FileHeader;
-  PE64_image_optional_header OptionalHeader;
+  pe_image_file_header FileHeader;
+  pe64_image_optional_header OptionalHeader;
 };
 
 // ========================================== //
@@ -268,7 +268,7 @@ struct PE64_image_nt_headers
 
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
-struct PE_image_section_header
+struct pe_image_section_header
 {
   uint8_t Name[IMAGE_SIZEOF_SHORT_NAME];
   union {
@@ -326,7 +326,7 @@ struct PE_image_section_header
 #define IMAGE_SCN_MEM_READ 0x40000000
 #define IMAGE_SCN_MEM_WRITE 0x80000000
 
-struct PE_image_export_directory
+struct pe_image_export_directory
 {
   uint32_t Characteristics;
   uint32_t TimeDateStamp;
@@ -341,7 +341,7 @@ struct PE_image_export_directory
   uint32_t AddressOfNameOrdinals;
 };
 
-struct PE_image_import_directory
+struct pe_image_import_directory
 {
   uint32_t OriginalFirstThunk; /* Import Lookup Table RVA */
   uint32_t TimeDateStamp;
@@ -350,7 +350,7 @@ struct PE_image_import_directory
   uint32_t FirstThunk; /* Import Address Table RVA */
 };
 
-struct PE_image_hint_name
+struct pe_image_hint_name
 {
   uint16_t Hint;
   char Name[];
