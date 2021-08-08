@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_PE_H
-#define LLAMADEBUG_PE_H
+#ifndef LLAMADEBUG_DEFS_H
+#define LLAMADEBUG_DEFS_H
 
 #include <cstdint>
 
@@ -356,4 +356,4 @@ struct pe_image_hint_name
   char Name[];
 };
 
-#endif// LLAMADEBUG_PE_H
+#endif // LLAMADEBUG_DEFS_H

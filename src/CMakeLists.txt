@@ -2,7 +2,7 @@
 set(SRCS
     binary/binary.cpp
     binary/pe/binary_pe.cpp
-    binary/pe/binary_pe64.cpp
+    binary/pe/dos_header.cpp
     binary/mmap_file.cpp
 )
 

@@ -3,6 +3,7 @@
 
 #include <llama_debug/binary/binary.h>
 #include <llama_debug/binary/pe/defs.h>
+#include <llama_debug/binary/pe/dos_header.h>
 
 namespace llama_debug {
 
@@ -24,7 +25,7 @@ private:
   void parse_imports(const uint8_t *buffer, uint32_t offset);
 
 private:
-  pe_image_dos_header m_dos_headers;
+  dos_header m_dos_header;
   pe64_image_nt_headers m_headers;
   pe_image_section_header *m_section_headers;
 };

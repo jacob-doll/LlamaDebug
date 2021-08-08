@@ -65,8 +65,10 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 
 uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
 {
-  std::memcpy(&m_dos_headers, buffer, sizeof(m_dos_headers));
-  offset = m_dos_headers.e_lfanew;
+  const pe_image_dos_header* dos_header_ = (const pe_image_dos_header*) buffer;
+  m_dos_header = dos_header{dos_header_};
+
+  offset = m_dos_header.lfanew();
   std::memcpy(&m_headers, buffer + offset, sizeof(m_headers));
   offset += sizeof(m_headers);
 
