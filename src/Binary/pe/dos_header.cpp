@@ -60,10 +60,6 @@ dos_header::dos_header(
   );
 }
 
-dos_header::dos_header(const uint8_t *buffer, const size_t size)
-{
-}
-
 uint16_t dos_header::magic() const
 {
   return m_magic;

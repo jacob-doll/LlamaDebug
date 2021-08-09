@@ -17,7 +17,7 @@ binary_pe::~binary_pe()
 bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
-  if (size < dos_header::size()) return false;
+  if (size < sizeof(raw_dos_header)) return false;
   // Check Dos Signature
   uint16_t dos_signature;
   std::memcpy(&dos_signature, buffer, sizeof(dos_signature));
@@ -38,7 +38,7 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 
 uint32_t binary_pe::rva_to_physical(uint32_t rva)
 {
-  for (uint16_t i = 0; i < m_headers.OptionalHeader.NumberOfRvaAndSizes; i++) {
+  for (uint16_t i = 0; i < m_optional_header.NumberOfRvaAndSizes; i++) {
     uint32_t section_virtual_address = m_section_headers[i].VirtualAddress;
     uint32_t section_virtual_size = m_section_headers[i].Misc.VirtualSize;
     if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
@@ -56,7 +56,7 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   offset += parse_headers(buffer, offset);
   parse_sections(buffer, offset);
 
-  const pe_image_data_directory import_directory = m_headers.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+  const pe_image_data_directory import_directory = m_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
   offset = rva_to_physical(import_directory.VirtualAddress);
   parse_imports(buffer, offset);
 
@@ -69,19 +69,24 @@ uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
   m_dos_header = dos_header{dos_header_};
 
   offset = m_dos_header.lfanew();
-  std::memcpy(&m_headers, buffer + offset, sizeof(m_headers));
-  offset += sizeof(m_headers);
+  std::memcpy(&m_signature, buffer + offset, sizeof(m_signature));
+  offset += sizeof(m_signature);
+  const raw_file_header* file_header_ = (const raw_file_header*)(buffer + offset);
+  m_file_header = file_header{file_header_};
+  offset += sizeof(raw_file_header);
+  std::memcpy(&m_optional_header, buffer + offset, sizeof(m_optional_header));
+  offset += sizeof(m_optional_header);
 
-  m_entry_point = (uint64_t)m_headers.OptionalHeader.AddressOfEntryPoint + m_headers.OptionalHeader.ImageBase;
-  m_base_addr = m_headers.OptionalHeader.ImageBase;
+  m_entry_point = (uint64_t)m_optional_header.AddressOfEntryPoint + m_optional_header.ImageBase;
+  m_base_addr = m_optional_header.ImageBase;
   return offset;
 }
 
 void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
 {
-  m_section_headers = new pe_image_section_header[m_headers.FileHeader.NumberOfSections];
+  m_section_headers = new pe_image_section_header[m_file_header.number_of_sections()];
 
-  for (uint16_t i = 0; i < m_headers.FileHeader.NumberOfSections; i++) {
+  for (uint16_t i = 0; i < m_file_header.number_of_sections(); i++) {
     std::memcpy(&m_section_headers[i], buffer + offset, sizeof(pe_image_section_header));
     m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
       m_section_headers[i].SizeOfRawData,
@@ -98,8 +103,6 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
   while (true) {
     pe_image_import_directory *import_directory = (pe_image_import_directory *)(buffer + offset);
     if (!import_directory->OriginalFirstThunk) break;
-
-    printf("%x\n", import_directory->ForwarderChain);
 
     uint32_t name_offset = rva_to_physical(import_directory->Name);
     char *dll_name = (char *)(buffer + name_offset);

@@ -37,7 +37,6 @@ public:
 
   dos_header();
   dos_header(const raw_dos_header *data);
-  dos_header(const uint8_t *buffer, const size_t size);
 
   uint16_t magic() const;
   uint16_t cblp() const;
@@ -78,8 +77,6 @@ public:
   void oeminfo(const uint16_t oeminfo);
   void res2(const res2_t &res2);
   void lfanew(const uint32_t lfanew);
-
-  static constexpr size_t size() { return 0x3c; }
 
 private:
   uint16_t m_magic;

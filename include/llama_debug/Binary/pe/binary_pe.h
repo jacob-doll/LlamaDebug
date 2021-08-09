@@ -4,6 +4,7 @@
 #include <llama_debug/binary/binary.h>
 #include <llama_debug/binary/pe/defs.h>
 #include <llama_debug/binary/pe/dos_header.h>
+#include <llama_debug/binary/pe/file_header.h>
 
 namespace llama_debug {
 
@@ -26,7 +27,10 @@ private:
 
 private:
   dos_header m_dos_header;
-  pe64_image_nt_headers m_headers;
+  uint32_t m_signature;
+  file_header m_file_header;
+  
+  pe64_image_optional_header m_optional_header;  
   pe_image_section_header *m_section_headers;
 };
 
