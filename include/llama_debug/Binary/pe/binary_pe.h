@@ -5,6 +5,7 @@
 #include <llama_debug/binary/pe/defs.h>
 #include <llama_debug/binary/pe/dos_header.h>
 #include <llama_debug/binary/pe/file_header.h>
+#include <llama_debug/binary/pe/optional_header.h>
 
 namespace llama_debug {
 
@@ -15,8 +16,6 @@ public:
   ~binary_pe();
 
   static bool validate(const uint8_t *buffer, uint32_t size);
-
-  virtual binary_type type() override { return BINARY_PE64; }
 
 private:
   uint32_t rva_to_physical(uint32_t rva);
@@ -29,8 +28,8 @@ private:
   dos_header m_dos_header;
   uint32_t m_signature;
   file_header m_file_header;
+  optional_header m_optional_header;  
   
-  pe64_image_optional_header m_optional_header;  
   pe_image_section_header *m_section_headers;
 };
 

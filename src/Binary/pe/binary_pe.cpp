@@ -28,17 +28,14 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
     uint32_t nt_signature;
     std::memcpy(&nt_signature, buffer + exe_offset, sizeof(nt_signature));
     if (nt_signature != IMAGE_NT_SIGNATURE) return false;
-    // Check that executable is 64-Bit
-    uint16_t optional_magic;
-    std::memcpy(&optional_magic, buffer + exe_offset + 0x18, sizeof(optional_magic));
-    if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) return true;
+    return true;
   }
   return false;
 }
 
 uint32_t binary_pe::rva_to_physical(uint32_t rva)
 {
-  for (uint16_t i = 0; i < m_optional_header.NumberOfRvaAndSizes; i++) {
+  for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
     uint32_t section_virtual_address = m_section_headers[i].VirtualAddress;
     uint32_t section_virtual_size = m_section_headers[i].Misc.VirtualSize;
     if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
@@ -53,11 +50,12 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   if (!validate(buffer, size)) return false;
 
   uint32_t offset = 0;
+  printf("Parsing headers!");
   offset += parse_headers(buffer, offset);
   parse_sections(buffer, offset);
 
-  const pe_image_data_directory import_directory = m_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-  offset = rva_to_physical(import_directory.VirtualAddress);
+  const data_directory import_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_IMPORT);
+  offset = rva_to_physical(import_directory.virtual_address);
   parse_imports(buffer, offset);
 
   return true;
@@ -65,20 +63,32 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 
 uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
 {
-  const raw_dos_header* dos_header_ = (const raw_dos_header*) buffer;
-  m_dos_header = dos_header{dos_header_};
+  const raw_dos_header *dos_header_ = (const raw_dos_header *)buffer;
+  m_dos_header = dos_header{ dos_header_ };
 
   offset = m_dos_header.lfanew();
+
   std::memcpy(&m_signature, buffer + offset, sizeof(m_signature));
   offset += sizeof(m_signature);
-  const raw_file_header* file_header_ = (const raw_file_header*)(buffer + offset);
-  m_file_header = file_header{file_header_};
-  offset += sizeof(raw_file_header);
-  std::memcpy(&m_optional_header, buffer + offset, sizeof(m_optional_header));
-  offset += sizeof(m_optional_header);
 
-  m_entry_point = (uint64_t)m_optional_header.AddressOfEntryPoint + m_optional_header.ImageBase;
-  m_base_addr = m_optional_header.ImageBase;
+  const raw_file_header *file_header_ = (const raw_file_header *)(buffer + offset);
+  m_file_header = file_header{ file_header_ };
+  offset += sizeof(raw_file_header);
+
+  uint16_t optional_magic;
+  std::memcpy(&optional_magic, buffer + m_dos_header.lfanew() + 0x18, sizeof(optional_magic));
+  if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
+    const raw_optional_header32 *optional_header_ = (const raw_optional_header32 *)(buffer + offset);
+    m_optional_header = optional_header{ optional_header_ };
+    offset += sizeof(raw_optional_header32);
+  } else if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+    const raw_optional_header64 *optional_header_ = (const raw_optional_header64 *)(buffer + offset);
+    m_optional_header = optional_header{ optional_header_ };
+    offset += sizeof(raw_optional_header64);
+  }
+
+  m_entry_point = (uint64_t)m_optional_header.address_of_entry_point() + m_optional_header.image_base();
+  m_base_addr = m_optional_header.image_base();
   return offset;
 }
 
@@ -120,8 +130,7 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
         m_symbols.emplace_back(symbol{
           dll_name,
           hint_name->Name,
-          address
-        });
+          address });
       }
 
       lookup_table_offset += sizeof(uint64_t);

@@ -36,16 +36,16 @@
 // File Header
 // ========================================== //
 
-struct pe_image_file_header
-{
-  uint16_t Machine;
-  uint16_t NumberOfSections;
-  uint32_t TimeDateStamp;
-  uint32_t PointerToSymbolTable;
-  uint32_t NumberOfSymbols;
-  uint16_t SizeOfOptionalHeader;
-  uint16_t Characteristics;
-};
+// struct pe_image_file_header
+// {
+//   uint16_t Machine;
+//   uint16_t NumberOfSections;
+//   uint32_t TimeDateStamp;
+//   uint32_t PointerToSymbolTable;
+//   uint32_t NumberOfSymbols;
+//   uint16_t SizeOfOptionalHeader;
+//   uint16_t Characteristics;
+// };
 
 // Characteristics
 
@@ -104,90 +104,90 @@ struct pe_image_file_header
 // Optional Header
 // ========================================== //
 
-struct pe_image_data_directory
-{
-  uint32_t VirtualAddress;
-  uint32_t Size;
-};
+// struct pe_image_data_directory
+// {
+//   uint32_t VirtualAddress;
+//   uint32_t Size;
+// };
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
 
-struct pe32_image_optional_header
-{
-  /* Standard fields. */
-  uint16_t Magic;
-  uint8_t MajorLinkerVersion;
-  uint8_t MinorLinkerVersion;
-  uint32_t SizeOfCode;
-  uint32_t SizeOfInitializedData;
-  uint32_t SizeOfUninitializedData;
-  uint32_t AddressOfEntryPoint;
-  uint32_t BaseOfCode;
-  uint32_t BaseOfData;
+// struct pe32_image_optional_header
+// {
+//   /* Standard fields. */
+//   uint16_t Magic;
+//   uint8_t MajorLinkerVersion;
+//   uint8_t MinorLinkerVersion;
+//   uint32_t SizeOfCode;
+//   uint32_t SizeOfInitializedData;
+//   uint32_t SizeOfUninitializedData;
+//   uint32_t AddressOfEntryPoint;
+//   uint32_t BaseOfCode;
+//   uint32_t BaseOfData;
 
-  /* NT additional fields. */
+//   /* NT additional fields. */
 
-  uint32_t ImageBase;
-  uint32_t SectionAlignment;
-  uint32_t FileAlignment;
-  uint16_t MajorOperatingSystemVersion;
-  uint16_t MinorOperatingSystemVersion;
-  uint16_t MajorImageVersion;
-  uint16_t MinorImageVersion;
-  uint16_t MajorSubsystemVersion;
-  uint16_t MinorSubsystemVersion;
-  uint32_t Win32VersionValue;
-  uint32_t SizeOfImage;
-  uint32_t SizeOfHeaders;
-  uint32_t CheckSum;
-  uint16_t Subsystem;
-  uint16_t DllCharacteristics;
-  uint32_t SizeOfStackReserve;
-  uint32_t SizeOfStackCommit;
-  uint32_t SizeOfHeapReserve;
-  uint32_t SizeOfHeapCommit;
-  uint32_t LoaderFlags;
-  uint32_t NumberOfRvaAndSizes;
-  pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-};
+//   uint32_t ImageBase;
+//   uint32_t SectionAlignment;
+//   uint32_t FileAlignment;
+//   uint16_t MajorOperatingSystemVersion;
+//   uint16_t MinorOperatingSystemVersion;
+//   uint16_t MajorImageVersion;
+//   uint16_t MinorImageVersion;
+//   uint16_t MajorSubsystemVersion;
+//   uint16_t MinorSubsystemVersion;
+//   uint32_t Win32VersionValue;
+//   uint32_t SizeOfImage;
+//   uint32_t SizeOfHeaders;
+//   uint32_t CheckSum;
+//   uint16_t Subsystem;
+//   uint16_t DllCharacteristics;
+//   uint32_t SizeOfStackReserve;
+//   uint32_t SizeOfStackCommit;
+//   uint32_t SizeOfHeapReserve;
+//   uint32_t SizeOfHeapCommit;
+//   uint32_t LoaderFlags;
+//   uint32_t NumberOfRvaAndSizes;
+//   pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+// };
 
-struct pe64_image_optional_header
-{
-  /* Standard fields. */
-  uint16_t Magic;
-  uint8_t MajorLinkerVersion;
-  uint8_t MinorLinkerVersion;
-  uint32_t SizeOfCode;
-  uint32_t SizeOfInitializedData;
-  uint32_t SizeOfUninitializedData;
-  uint32_t AddressOfEntryPoint;
-  uint32_t BaseOfCode;
+// struct pe64_image_optional_header
+// {
+//   /* Standard fields. */
+//   uint16_t Magic;
+//   uint8_t MajorLinkerVersion;
+//   uint8_t MinorLinkerVersion;
+//   uint32_t SizeOfCode;
+//   uint32_t SizeOfInitializedData;
+//   uint32_t SizeOfUninitializedData;
+//   uint32_t AddressOfEntryPoint;
+//   uint32_t BaseOfCode;
 
-  /* NT additional fields. */
+//   /* NT additional fields. */
 
-  uint64_t ImageBase;
-  uint32_t SectionAlignment;
-  uint32_t FileAlignment;
-  uint16_t MajorOperatingSystemVersion;
-  uint16_t MinorOperatingSystemVersion;
-  uint16_t MajorImageVersion;
-  uint16_t MinorImageVersion;
-  uint16_t MajorSubsystemVersion;
-  uint16_t MinorSubsystemVersion;
-  uint32_t Win32VersionValue;
-  uint32_t SizeOfImage;
-  uint32_t SizeOfHeaders;
-  uint32_t CheckSum;
-  uint16_t Subsystem;
-  uint16_t DllCharacteristics;
-  uint64_t SizeOfStackReserve;
-  uint64_t SizeOfStackCommit;
-  uint64_t SizeOfHeapReserve;
-  uint64_t SizeOfHeapCommit;
-  uint32_t LoaderFlags;
-  uint32_t NumberOfRvaAndSizes;
-  pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-};
+//   uint64_t ImageBase;
+//   uint32_t SectionAlignment;
+//   uint32_t FileAlignment;
+//   uint16_t MajorOperatingSystemVersion;
+//   uint16_t MinorOperatingSystemVersion;
+//   uint16_t MajorImageVersion;
+//   uint16_t MinorImageVersion;
+//   uint16_t MajorSubsystemVersion;
+//   uint16_t MinorSubsystemVersion;
+//   uint32_t Win32VersionValue;
+//   uint32_t SizeOfImage;
+//   uint32_t SizeOfHeaders;
+//   uint32_t CheckSum;
+//   uint16_t Subsystem;
+//   uint16_t DllCharacteristics;
+//   uint64_t SizeOfStackReserve;
+//   uint64_t SizeOfStackCommit;
+//   uint64_t SizeOfHeapReserve;
+//   uint64_t SizeOfHeapCommit;
+//   uint32_t LoaderFlags;
+//   uint32_t NumberOfRvaAndSizes;
+//   pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+// };
 
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
 #define IMAGE_NT_OPTIONAL_HDR64_MAGIC 0x20b
@@ -248,19 +248,19 @@ struct pe64_image_optional_header
 
 #define IMAGE_NT_HEADERS(x) x + 0x000000F0
 
-struct pe32_image_nt_headers
-{
-  uint32_t Signature;
-  pe_image_file_header FileHeader;
-  pe32_image_optional_header OptionalHeader;
-};
+// struct pe32_image_nt_headers
+// {
+//   uint32_t Signature;
+//   pe_image_file_header FileHeader;
+//   pe32_image_optional_header OptionalHeader;
+// };
 
-struct pe64_image_nt_headers
-{
-  uint32_t Signature;
-  pe_image_file_header FileHeader;
-  pe64_image_optional_header OptionalHeader;
-};
+// struct pe64_image_nt_headers
+// {
+//   uint32_t Signature;
+//   pe_image_file_header FileHeader;
+//   pe64_image_optional_header OptionalHeader;
+// };
 
 // ========================================== //
 // Section Header

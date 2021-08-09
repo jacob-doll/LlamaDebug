@@ -4,60 +4,60 @@
 
 namespace llama_debug {
 
-dos_header::dos_header() : m_magic{ 0x5A4D },
-                           m_cblp{ 0x0090 },
-                           m_cp{ 0x0003 },
-                           m_crlc{ 0x0000 },
-                           m_cparhdr{ 0x0004 },
-                           m_minalloc{ 0x0000 },
-                           m_maxalloc{ 0xFFFF },
-                           m_ss{ 0x0000 },
-                           m_sp{ 0x00B8 },
-                           m_csum{ 0x0000 },
-                           m_ip{ 0x0000 },
-                           m_cs{ 0x0000 },
-                           m_lfarlc{ 0x0040 },
-                           m_ovno{ 0x0000 },
-                           m_res{},
-                           m_oemid{ 0x0000 },
-                           m_oeminfo{ 0x0000 },
-                           m_res2{},
-                           m_lfanew{ 0x000000F0 }
+dos_header::dos_header()
+  : m_magic{ 0x5A4D },
+    m_cblp{ 0x0090 },
+    m_cp{ 0x0003 },
+    m_crlc{ 0x0000 },
+    m_cparhdr{ 0x0004 },
+    m_minalloc{ 0x0000 },
+    m_maxalloc{ 0xFFFF },
+    m_ss{ 0x0000 },
+    m_sp{ 0x00B8 },
+    m_csum{ 0x0000 },
+    m_ip{ 0x0000 },
+    m_cs{ 0x0000 },
+    m_lfarlc{ 0x0040 },
+    m_ovno{ 0x0000 },
+    m_res{},
+    m_oemid{ 0x0000 },
+    m_oeminfo{ 0x0000 },
+    m_res2{},
+    m_lfanew{ 0x000000F0 }
 
 {}
 
 dos_header::dos_header(
-  const raw_dos_header *data) : m_magic{ data->magic },
-                                m_cblp{ data->cblp },
-                                m_cp{ data->cp },
-                                m_crlc{ data->crlc },
-                                m_cparhdr{ data->cparhdr },
-                                m_minalloc{ data->minalloc },
-                                m_maxalloc{ data->maxalloc },
-                                m_ss{ data->ss },
-                                m_sp{ data->sp },
-                                m_csum{ data->csum },
-                                m_ip{ data->ip },
-                                m_cs{ data->cs },
-                                m_lfarlc{ data->lfarlc },
-                                m_ovno{ data->ovno },
-                                m_res{},
-                                m_oemid{ data->oemid },
-                                m_oeminfo{ data->oeminfo },
-                                m_res2{},
-                                m_lfanew{ data->lfanew }
+  const raw_dos_header *data)
+  : m_magic{ data->magic },
+    m_cblp{ data->cblp },
+    m_cp{ data->cp },
+    m_crlc{ data->crlc },
+    m_cparhdr{ data->cparhdr },
+    m_minalloc{ data->minalloc },
+    m_maxalloc{ data->maxalloc },
+    m_ss{ data->ss },
+    m_sp{ data->sp },
+    m_csum{ data->csum },
+    m_ip{ data->ip },
+    m_cs{ data->cs },
+    m_lfarlc{ data->lfarlc },
+    m_ovno{ data->ovno },
+    m_res{},
+    m_oemid{ data->oemid },
+    m_oeminfo{ data->oeminfo },
+    m_res2{},
+    m_lfanew{ data->lfanew }
 
 {
   std::copy(
     std::begin(data->res),
     std::end(data->res),
-    m_res.begin()
-  );
+    m_res.begin());
   std::copy(
     std::begin(data->res2),
     std::end(data->res2),
-    m_res2.begin()
-  );
+    m_res2.begin());
 }
 
 uint16_t dos_header::magic() const

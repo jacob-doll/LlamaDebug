@@ -3,22 +3,24 @@
 
 namespace llama_debug {
 
-file_header::file_header() : m_machine{ IMAGE_FILE_MACHINE_UNKNOWN },
-                             m_number_of_sections{ 0x0000 },
-                             m_time_date_stamp{ 0x00000000 },
-                             m_pointer_to_symbol_table{ 0x00000000 },
-                             m_number_of_symbols{ 0x00000000 },
-                             m_size_of_optional_header{ 0x0000 },
-                             m_characteristics{ IMAGE_FILE_EXECUTABLE_IMAGE }
+file_header::file_header()
+  : m_machine{ IMAGE_FILE_MACHINE_UNKNOWN },
+    m_number_of_sections{ 0x0000 },
+    m_time_date_stamp{ 0x00000000 },
+    m_pointer_to_symbol_table{ 0x00000000 },
+    m_number_of_symbols{ 0x00000000 },
+    m_size_of_optional_header{ 0x0000 },
+    m_characteristics{ IMAGE_FILE_EXECUTABLE_IMAGE }
 {}
 
-file_header::file_header(const raw_file_header *data) : m_machine{ data->machine },
-                                                        m_number_of_sections{ data->number_of_sections },
-                                                        m_time_date_stamp{ data->time_date_stamp },
-                                                        m_pointer_to_symbol_table{ data->pointer_to_symbol_table },
-                                                        m_number_of_symbols{ data->number_of_symbols },
-                                                        m_size_of_optional_header{ data->size_of_optional_header },
-                                                        m_characteristics{ data->characteristics }
+file_header::file_header(const raw_file_header *data)
+  : m_machine{ data->machine },
+    m_number_of_sections{ data->number_of_sections },
+    m_time_date_stamp{ data->time_date_stamp },
+    m_pointer_to_symbol_table{ data->pointer_to_symbol_table },
+    m_number_of_symbols{ data->number_of_symbols },
+    m_size_of_optional_header{ data->size_of_optional_header },
+    m_characteristics{ data->characteristics }
 {}
 
 uint16_t file_header::machine() const

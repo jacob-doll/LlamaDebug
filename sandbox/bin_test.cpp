@@ -19,8 +19,6 @@ int main()
 {
   using namespace llama_debug;
   binary *bin = binary::from_file("C:\\Windows\\System32\\cmd.exe");
-  std::cout << ((bin->type() == BINARY_PE) ? "PE" : "PE64")
-            << "\n";
 
   hex_out("Base address: ", 16, bin->base_addr());
   hex_out("Entry point: ", 16, bin->entry_point());
