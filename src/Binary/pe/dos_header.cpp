@@ -18,41 +18,50 @@ dos_header::dos_header() : m_magic{ 0x5A4D },
                            m_cs{ 0x0000 },
                            m_lfarlc{ 0x0040 },
                            m_ovno{ 0x0000 },
-                           m_res{ 0x0000 },
+                           m_res{},
                            m_oemid{ 0x0000 },
                            m_oeminfo{ 0x0000 },
-                           m_res2{ 0x0000 },
+                           m_res2{},
                            m_lfanew{ 0x000000F0 }
+
 {}
 
 dos_header::dos_header(
-  const pe_image_dos_header *image_dos_header) : m_magic{ image_dos_header->e_magic },
-                                                 m_cblp{ image_dos_header->e_cblp },
-                                                 m_cp{ image_dos_header->e_cp },
-                                                 m_crlc{ image_dos_header->e_crlc },
-                                                 m_cparhdr{ image_dos_header->e_cparhdr },
-                                                 m_minalloc{ image_dos_header->e_minalloc },
-                                                 m_maxalloc{ image_dos_header->e_maxalloc },
-                                                 m_ss{ image_dos_header->e_ss },
-                                                 m_sp{ image_dos_header->e_sp },
-                                                 m_csum{ image_dos_header->e_csum },
-                                                 m_ip{ image_dos_header->e_ip },
-                                                 m_cs{ image_dos_header->e_cs },
-                                                 m_lfarlc{ image_dos_header->e_lfarlc },
-                                                 m_ovno{ image_dos_header->e_ovno },
-                                                 m_oemid{ image_dos_header->e_oemid },
-                                                 m_oeminfo{ image_dos_header->e_oeminfo },
-                                                 m_lfanew{ image_dos_header->e_lfanew }
+  const raw_dos_header *data) : m_magic{ data->magic },
+                                m_cblp{ data->cblp },
+                                m_cp{ data->cp },
+                                m_crlc{ data->crlc },
+                                m_cparhdr{ data->cparhdr },
+                                m_minalloc{ data->minalloc },
+                                m_maxalloc{ data->maxalloc },
+                                m_ss{ data->ss },
+                                m_sp{ data->sp },
+                                m_csum{ data->csum },
+                                m_ip{ data->ip },
+                                m_cs{ data->cs },
+                                m_lfarlc{ data->lfarlc },
+                                m_ovno{ data->ovno },
+                                m_res{},
+                                m_oemid{ data->oemid },
+                                m_oeminfo{ data->oeminfo },
+                                m_res2{},
+                                m_lfanew{ data->lfanew }
+
 {
   std::copy(
-    std::begin(image_dos_header->e_res),
-    std::end(image_dos_header->e_res),
-    m_res.begin());
-
+    std::begin(data->res),
+    std::end(data->res),
+    m_res.begin()
+  );
   std::copy(
-    std::begin(image_dos_header->e_res2),
-    std::end(image_dos_header->e_res2),
-    m_res2.begin());
+    std::begin(data->res2),
+    std::end(data->res2),
+    m_res2.begin()
+  );
+}
+
+dos_header::dos_header(const uint8_t *buffer, const size_t size)
+{
 }
 
 uint16_t dos_header::magic() const
@@ -220,7 +229,7 @@ void dos_header::ovno(const uint16_t ovno)
   m_ovno = ovno;
 }
 
-void dos_header::res(const std::array<uint16_t, 4> &res)
+void dos_header::res(const res_t &res)
 {
   m_res = res;
 }
@@ -235,7 +244,7 @@ void dos_header::oeminfo(const uint16_t oeminfo)
   m_oeminfo = oeminfo;
 }
 
-void dos_header::res2(const std::array<uint16_t, 10> &res2)
+void dos_header::res2(const res2_t &res2)
 {
   m_res2 = res2;
 }

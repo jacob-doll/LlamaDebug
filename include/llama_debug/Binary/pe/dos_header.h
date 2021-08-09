@@ -4,15 +4,40 @@
 #include <array>
 #include <cstdint>
 
-#include <llama_debug/binary/pe/defs.h>
-
 namespace llama_debug {
+
+struct raw_dos_header
+{
+  uint16_t magic;
+  uint16_t cblp;
+  uint16_t cp;
+  uint16_t crlc;
+  uint16_t cparhdr;
+  uint16_t minalloc;
+  uint16_t maxalloc;
+  uint16_t ss;
+  uint16_t sp;
+  uint16_t csum;
+  uint16_t ip;
+  uint16_t cs;
+  uint16_t lfarlc;
+  uint16_t ovno;
+  uint16_t res[4];
+  uint16_t oemid;
+  uint16_t oeminfo;
+  uint16_t res2[10];
+  uint32_t lfanew;
+};
 
 class dos_header
 {
 public:
+  using res_t = std::array<uint16_t, 4>;
+  using res2_t = std::array<uint16_t, 10>;
+
   dos_header();
-  dos_header(const pe_image_dos_header *image_dos_header);
+  dos_header(const raw_dos_header *data);
+  dos_header(const uint8_t *buffer, const size_t size);
 
   uint16_t magic() const;
   uint16_t cblp() const;
@@ -28,10 +53,10 @@ public:
   uint16_t cs() const;
   uint16_t lfarlc() const;
   uint16_t ovno() const;
-  std::array<uint16_t, 4> res() const;
+  res_t res() const;
   uint16_t oemid() const;
   uint16_t oeminfo() const;
-  std::array<uint16_t, 10> res2() const;
+  res2_t res2() const;
   uint32_t lfanew() const;
 
   void magic(const uint16_t magic);
@@ -48,11 +73,13 @@ public:
   void cs(const uint16_t cs);
   void lfarlc(const uint16_t lfarlc);
   void ovno(const uint16_t ovno);
-  void res(const std::array<uint16_t, 4> &res);
+  void res(const res_t &res);
   void oemid(const uint16_t oemid);
   void oeminfo(const uint16_t oeminfo);
-  void res2(const std::array<uint16_t, 10> &res2);
+  void res2(const res2_t &res2);
   void lfanew(const uint32_t lfanew);
+
+  static constexpr size_t size() { return 0x3c; }
 
 private:
   uint16_t m_magic;
@@ -69,10 +96,10 @@ private:
   uint16_t m_cs;
   uint16_t m_lfarlc;
   uint16_t m_ovno;
-  std::array<uint16_t, 4> m_res;
+  res_t m_res;
   uint16_t m_oemid;
   uint16_t m_oeminfo;
-  std::array<uint16_t, 10> m_res2;
+  res2_t m_res2;
   uint32_t m_lfanew;
 };
 

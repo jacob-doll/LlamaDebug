@@ -7,6 +7,8 @@
 
 namespace llama_debug {
 
+// add more abstraction
+
 struct section
 {
   std::string name;

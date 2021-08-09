@@ -4,6 +4,8 @@
 
 namespace llama_debug {
 
+// here to change filename
+
 binary *binary::from_file(const std::string &filename)
 {
   mmap_file file(filename);

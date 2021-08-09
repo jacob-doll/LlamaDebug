@@ -17,7 +17,7 @@ binary_pe::~binary_pe()
 bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
-  if (size < sizeof(pe_image_dos_header)) return false;
+  if (size < dos_header::size()) return false;
   // Check Dos Signature
   uint16_t dos_signature;
   std::memcpy(&dos_signature, buffer, sizeof(dos_signature));
@@ -65,7 +65,7 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
 
 uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
 {
-  const pe_image_dos_header* dos_header_ = (const pe_image_dos_header*) buffer;
+  const raw_dos_header* dos_header_ = (const raw_dos_header*) buffer;
   m_dos_header = dos_header{dos_header_};
 
   offset = m_dos_header.lfanew();
