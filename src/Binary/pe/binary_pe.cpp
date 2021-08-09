@@ -9,11 +9,6 @@ binary_pe::binary_pe(const uint8_t *buffer, uint32_t size)
   from_buffer(buffer, size);
 }
 
-binary_pe::~binary_pe()
-{
-  delete[] m_section_headers;
-}
-
 bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
@@ -36,10 +31,10 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
 uint32_t binary_pe::rva_to_physical(uint32_t rva)
 {
   for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
-    uint32_t section_virtual_address = m_section_headers[i].VirtualAddress;
-    uint32_t section_virtual_size = m_section_headers[i].Misc.VirtualSize;
+    uint32_t section_virtual_address = m_section_headers.at(i).virtual_address();
+    uint32_t section_virtual_size = m_section_headers.at(i).virtual_size();
     if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
-      return m_section_headers[i].PointerToRawData + (rva - section_virtual_address);
+      return m_section_headers.at(i).pointer_to_raw_data() + (rva - section_virtual_address);
     }
   }
   return rva;
@@ -94,17 +89,16 @@ uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
 
 void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
 {
-  m_section_headers = new pe_image_section_header[m_file_header.number_of_sections()];
-
   for (uint16_t i = 0; i < m_file_header.number_of_sections(); i++) {
-    std::memcpy(&m_section_headers[i], buffer + offset, sizeof(pe_image_section_header));
-    m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
-      m_section_headers[i].SizeOfRawData,
-      m_section_headers[i].Misc.VirtualSize,
-      m_section_headers[i].PointerToRawData,
-      m_section_headers[i].VirtualAddress,
-      0 });
-    offset += sizeof(pe_image_section_header);
+    const raw_section_header *section_header_ = (const raw_section_header *)(buffer + offset);
+    m_section_headers.emplace_back(section_header{section_header_});
+    // m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
+    //   m_section_headers[i].SizeOfRawData,
+    //   m_section_headers[i].Misc.VirtualSize,
+    //   m_section_headers[i].PointerToRawData,
+    //   m_section_headers[i].VirtualAddress,
+    //   0 });
+    offset += sizeof(raw_section_header);
   }
 }
 

@@ -6,14 +6,18 @@
 #include <llama_debug/binary/pe/dos_header.h>
 #include <llama_debug/binary/pe/file_header.h>
 #include <llama_debug/binary/pe/optional_header.h>
+#include <llama_debug/binary/pe/section_header.h>
+
+#include <vector>
 
 namespace llama_debug {
 
 class binary_pe : public binary
 {
 public:
+  using sections_t = std::vector<section_header>;
+
   binary_pe(const uint8_t *buffer, uint32_t size);
-  ~binary_pe();
 
   static bool validate(const uint8_t *buffer, uint32_t size);
 
@@ -29,8 +33,7 @@ private:
   uint32_t m_signature;
   file_header m_file_header;
   optional_header m_optional_header;  
-  
-  pe_image_section_header *m_section_headers;
+  sections_t m_section_headers;
 };
 
 }// namespace llama_debug
