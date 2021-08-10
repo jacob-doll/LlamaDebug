@@ -91,7 +91,7 @@ void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
 {
   for (uint16_t i = 0; i < m_file_header.number_of_sections(); i++) {
     const raw_section_header *section_header_ = (const raw_section_header *)(buffer + offset);
-    m_section_headers.emplace_back(section_header{section_header_});
+    m_section_headers.emplace_back(section_header{ section_header_ });
     // m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
     //   m_section_headers[i].SizeOfRawData,
     //   m_section_headers[i].Misc.VirtualSize,
