@@ -28,7 +28,7 @@ section_header::section_header(const raw_section_header *data)
     m_characteristics{ data->characteristics }
 {}
 
-std::string_view section_header::name() const
+std::string section_header::name() const
 {
   return m_name;
 }
@@ -38,17 +38,17 @@ uint32_t section_header::virtual_size() const
   return m_virtual_size;
 }
 
-uint32_t section_header::virtual_address() const
+uintptr_t section_header::virtual_address() const
 {
   return m_virtual_address;
 }
 
-uint32_t section_header::size_of_raw_data() const
+uint32_t section_header::physical_size() const
 {
   return m_size_of_raw_data;
 }
 
-uint32_t section_header::pointer_to_raw_data() const
+uintptr_t section_header::physical_address() const
 {
   return m_pointer_to_raw_data;
 }

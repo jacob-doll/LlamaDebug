@@ -1,8 +1,9 @@
 #ifndef LLAMADEBUG_SECTION_HEADER_H
 #define LLAMADEBUG_SECTION_HEADER_H
 
+#include <llama_debug/binary/section.h>
+
 #include <cstdint>
-#include <string_view>
 
 namespace llama_debug {
 
@@ -20,17 +21,24 @@ struct raw_section_header
   uint32_t characteristics;
 };
 
-class section_header
+class section_header : public section
 {
 public:
   section_header();
   section_header(const raw_section_header *data);
 
-  std::string_view name() const;
-  uint32_t virtual_size() const;
-  uint32_t virtual_address() const;
-  uint32_t size_of_raw_data() const;
-  uint32_t pointer_to_raw_data() const;
+  virtual std::string name() const override;
+  virtual uint32_t virtual_size() const override;
+  virtual uintptr_t virtual_address() const override;
+  virtual uint32_t physical_size() const override;
+  virtual uintptr_t physical_address() const override;
+
+  // std::string_view name() const;
+  // uint32_t virtual_size() const;
+  // uint32_t virtual_address() const;
+  // uint32_t size_of_raw_data() const;
+  // uint32_t pointer_to_raw_data() const;
+
   uint32_t pointer_to_relocations() const;
   uint32_t pointer_to_line_numbers() const;
   uint16_t number_of_relocations() const;
@@ -49,7 +57,7 @@ public:
   void characteristics(const uint32_t characteristics);
 
 private:
-  std::string_view m_name;
+  std::string m_name;
   uint32_t m_virtual_size;
   uint32_t m_virtual_address;
   uint32_t m_size_of_raw_data;

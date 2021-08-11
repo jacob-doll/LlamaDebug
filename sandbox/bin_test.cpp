@@ -25,17 +25,18 @@ int main()
 
   std::cout << "Sections:\n";
 
-  // for (section sec : bin->sections()) {
-  //   std::cout << sec.name << "\n";
-  //   hex_out("Physical size: ", 8, sec.phys_size);
-  //   hex_out("Virtual size: ", 8, sec.virt_size);
-  //   hex_out("Virtual address: ", 16, sec.phys_addr);
-  //   hex_out("Virtual address: ", 16, sec.virt_addr);
-  //   hex_out("Flags: ", 8, sec.flags);
-  // }
+  std::cout << bin->sections().size() << "\n";
 
-  for (symbol sym : bin->symbols()) {
-    std::cout << sym.lib << ": " << sym.name << ": " << sym.address << "\n";
+  for (auto& sec : bin->sections()) {
+    std::cout << sec->name() << "\n";
+    hex_out("Physical size: ", 8, sec->physical_size());
+    hex_out("Virtual size: ", 8, sec->virtual_size());
+    hex_out("Physical address: ", 16, sec->physical_address());
+    hex_out("Virtual address: ", 16, sec->virtual_address());
   }
+
+  // for (symbol sym : bin->symbols()) {
+  //   std::cout << sym.lib << ": " << sym.name << ": " << sym.address << "\n";
+  // }
   delete bin;
 }

@@ -9,46 +9,6 @@
 #define IMAGE_VXD_SIGNATURE 0x454C// LE
 #define IMAGE_NT_SIGNATURE 0x00004550// PE00
 
-// struct pe_image_dos_header
-// {
-//   uint16_t e_magic;// Magic number
-//   uint16_t e_cblp;// Bytes on last page of file
-//   uint16_t e_cp;// Pages in file
-//   uint16_t e_crlc;// Relocations
-//   uint16_t e_cparhdr;// Size of header in paragraphs
-//   uint16_t e_minalloc;// Minimum extra paragraphs needed
-//   uint16_t e_maxalloc;// Maximum extra paragraphs needed
-//   uint16_t e_ss;// Initial (relative) SS value
-//   uint16_t e_sp;// Initial SP value
-//   uint16_t e_csum;// Checksum
-//   uint16_t e_ip;// Initial IP value
-//   uint16_t e_cs;// Initial (relative) CS value
-//   uint16_t e_lfarlc;// File address of relocation table
-//   uint16_t e_ovno;// Overlay number
-//   uint16_t e_res[4];// Reserved words
-//   uint16_t e_oemid;// OEM identifier (for e_oeminfo)
-//   uint16_t e_oeminfo;// OEM information; e_oemid specific
-//   uint16_t e_res2[10];// Reserved words
-//   uint32_t e_lfanew;// File address of new exe header
-// };// see WinNT.h
-
-// ========================================== //
-// File Header
-// ========================================== //
-
-// struct pe_image_file_header
-// {
-//   uint16_t Machine;
-//   uint16_t NumberOfSections;
-//   uint32_t TimeDateStamp;
-//   uint32_t PointerToSymbolTable;
-//   uint32_t NumberOfSymbols;
-//   uint16_t SizeOfOptionalHeader;
-//   uint16_t Characteristics;
-// };
-
-// Characteristics
-
 #define IMAGE_FILE_RELOCS_STRIPPED 0x0001
 #define IMAGE_FILE_EXECUTABLE_IMAGE 0x0002
 #define IMAGE_FILE_LINE_NUMS_STRIPPED 0x0004
@@ -64,8 +24,6 @@
 #define IMAGE_FILE_DLL 0x2000
 #define IMAGE_FILE_UP_SYSTEM_ONLY 0x4000
 #define IMAGE_FILE_BYTES_REVERSED_HI 0x8000
-
-// Machines
 
 #define IMAGE_FILE_MACHINE_UNKNOWN 0
 #define IMAGE_FILE_MACHINE_TARGET_HOST 0x0001
@@ -100,99 +58,10 @@
 #define IMAGE_FILE_MACHINE_ARM64 0xAA64
 #define IMAGE_FILE_MACHINE_CEE 0xC0EE
 
-// ========================================== //
-// Optional Header
-// ========================================== //
-
-// struct pe_image_data_directory
-// {
-//   uint32_t VirtualAddress;
-//   uint32_t Size;
-// };
-
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
-
-// struct pe32_image_optional_header
-// {
-//   /* Standard fields. */
-//   uint16_t Magic;
-//   uint8_t MajorLinkerVersion;
-//   uint8_t MinorLinkerVersion;
-//   uint32_t SizeOfCode;
-//   uint32_t SizeOfInitializedData;
-//   uint32_t SizeOfUninitializedData;
-//   uint32_t AddressOfEntryPoint;
-//   uint32_t BaseOfCode;
-//   uint32_t BaseOfData;
-
-//   /* NT additional fields. */
-
-//   uint32_t ImageBase;
-//   uint32_t SectionAlignment;
-//   uint32_t FileAlignment;
-//   uint16_t MajorOperatingSystemVersion;
-//   uint16_t MinorOperatingSystemVersion;
-//   uint16_t MajorImageVersion;
-//   uint16_t MinorImageVersion;
-//   uint16_t MajorSubsystemVersion;
-//   uint16_t MinorSubsystemVersion;
-//   uint32_t Win32VersionValue;
-//   uint32_t SizeOfImage;
-//   uint32_t SizeOfHeaders;
-//   uint32_t CheckSum;
-//   uint16_t Subsystem;
-//   uint16_t DllCharacteristics;
-//   uint32_t SizeOfStackReserve;
-//   uint32_t SizeOfStackCommit;
-//   uint32_t SizeOfHeapReserve;
-//   uint32_t SizeOfHeapCommit;
-//   uint32_t LoaderFlags;
-//   uint32_t NumberOfRvaAndSizes;
-//   pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-// };
-
-// struct pe64_image_optional_header
-// {
-//   /* Standard fields. */
-//   uint16_t Magic;
-//   uint8_t MajorLinkerVersion;
-//   uint8_t MinorLinkerVersion;
-//   uint32_t SizeOfCode;
-//   uint32_t SizeOfInitializedData;
-//   uint32_t SizeOfUninitializedData;
-//   uint32_t AddressOfEntryPoint;
-//   uint32_t BaseOfCode;
-
-//   /* NT additional fields. */
-
-//   uint64_t ImageBase;
-//   uint32_t SectionAlignment;
-//   uint32_t FileAlignment;
-//   uint16_t MajorOperatingSystemVersion;
-//   uint16_t MinorOperatingSystemVersion;
-//   uint16_t MajorImageVersion;
-//   uint16_t MinorImageVersion;
-//   uint16_t MajorSubsystemVersion;
-//   uint16_t MinorSubsystemVersion;
-//   uint32_t Win32VersionValue;
-//   uint32_t SizeOfImage;
-//   uint32_t SizeOfHeaders;
-//   uint32_t CheckSum;
-//   uint16_t Subsystem;
-//   uint16_t DllCharacteristics;
-//   uint64_t SizeOfStackReserve;
-//   uint64_t SizeOfStackCommit;
-//   uint64_t SizeOfHeapReserve;
-//   uint64_t SizeOfHeapCommit;
-//   uint32_t LoaderFlags;
-//   uint32_t NumberOfRvaAndSizes;
-//   pe_image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-// };
 
 #define IMAGE_NT_OPTIONAL_HDR32_MAGIC 0x10b
 #define IMAGE_NT_OPTIONAL_HDR64_MAGIC 0x20b
-
-// Subsystems
 
 #define IMAGE_SUBSYSTEM_UNKNOWN 0
 #define IMAGE_SUBSYSTEM_NATIVE 1
@@ -210,8 +79,6 @@
 #define IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION 16
 #define IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG 17
 
-// DLL Characteristics
-
 #define IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA 0x0020
 #define IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE 0x0040
 #define IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY 0x0080
@@ -223,8 +90,6 @@
 #define IMAGE_DLLCHARACTERISTICS_WDM_DRIVER 0x2000
 #define IMAGE_DLLCHARACTERISTICS_GUARD_CF 0x4000
 #define IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE 0x8000
-
-// Data Directories
 
 #define IMAGE_DIRECTORY_ENTRY_EXPORT 0
 #define IMAGE_DIRECTORY_ENTRY_IMPORT 1
@@ -242,50 +107,9 @@
 #define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT 13
 #define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14
 
-// ========================================== //
-// NT Headers
-// ========================================== //
-
 #define IMAGE_NT_HEADERS(x) x + 0x000000F0
 
-// struct pe32_image_nt_headers
-// {
-//   uint32_t Signature;
-//   pe_image_file_header FileHeader;
-//   pe32_image_optional_header OptionalHeader;
-// };
-
-// struct pe64_image_nt_headers
-// {
-//   uint32_t Signature;
-//   pe_image_file_header FileHeader;
-//   pe64_image_optional_header OptionalHeader;
-// };
-
-// ========================================== //
-// Section Header
-// ========================================== //
-
 #define IMAGE_SIZEOF_SHORT_NAME 8
-
-// struct pe_image_section_header
-// {
-//   uint8_t Name[IMAGE_SIZEOF_SHORT_NAME];
-//   union {
-//     uint32_t PhysicalAddress;
-//     uint32_t VirtualSize;
-//   } Misc;
-//   uint32_t VirtualAddress;
-//   uint32_t SizeOfRawData;
-//   uint32_t PointerToRawData;
-//   uint32_t PointerToRelocations;
-//   uint32_t PointerToLinenumbers;
-//   uint16_t NumberOfRelocations;
-//   uint16_t NumberOfLinenumbers;
-//   uint32_t Characteristics;
-// };
-
-// Section characteristics.
 
 #define IMAGE_SCN_TYPE_NO_PAD 0x00000008
 #define IMAGE_SCN_CNT_CODE 0x00000020

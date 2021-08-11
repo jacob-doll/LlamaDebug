@@ -28,13 +28,21 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
   return false;
 }
 
+sections_t &binary_pe::sections() {
+  return m_section_headers;
+}
+
+std::vector<symbol> &binary_pe::symbols() {
+  return std::vector<symbol>();
+}
+
 uint32_t binary_pe::rva_to_physical(uint32_t rva)
 {
   for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
-    uint32_t section_virtual_address = m_section_headers.at(i).virtual_address();
-    uint32_t section_virtual_size = m_section_headers.at(i).virtual_size();
+    uint32_t section_virtual_address = m_section_headers.at(i)->virtual_address();
+    uint32_t section_virtual_size = m_section_headers.at(i)->virtual_size();
     if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
-      return m_section_headers.at(i).pointer_to_raw_data() + (rva - section_virtual_address);
+      return m_section_headers.at(i)->physical_address() + (rva - section_virtual_address);
     }
   }
   return rva;
@@ -91,13 +99,8 @@ void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
 {
   for (uint16_t i = 0; i < m_file_header.number_of_sections(); i++) {
     const raw_section_header *section_header_ = (const raw_section_header *)(buffer + offset);
-    m_section_headers.emplace_back(section_header{ section_header_ });
-    // m_sections.emplace_back(section{ std::string((char *)(m_section_headers[i].Name), IMAGE_SIZEOF_SHORT_NAME),
-    //   m_section_headers[i].SizeOfRawData,
-    //   m_section_headers[i].Misc.VirtualSize,
-    //   m_section_headers[i].PointerToRawData,
-    //   m_section_headers[i].VirtualAddress,
-    //   0 });
+    m_section_headers.emplace_back(
+      std::make_unique<section_header>(section_header_));
     offset += sizeof(raw_section_header);
   }
 }
@@ -121,10 +124,10 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
       if (!(image_thunk & 0x8000000000000000)) {
         name_offset = rva_to_physical((uint32_t)(image_thunk));
         pe_image_hint_name *hint_name = (pe_image_hint_name *)(buffer + name_offset);
-        m_symbols.emplace_back(symbol{
-          dll_name,
-          hint_name->Name,
-          address });
+        // m_symbols.emplace_back(symbol{
+        //   dll_name,
+        //   hint_name->Name,
+        //   address });
       }
 
       lookup_table_offset += sizeof(uint64_t);

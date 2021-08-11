@@ -15,11 +15,12 @@ namespace llama_debug {
 class binary_pe : public binary
 {
 public:
-  using sections_t = std::vector<section_header>;
-
   binary_pe(const uint8_t *buffer, uint32_t size);
 
   static bool validate(const uint8_t *buffer, uint32_t size);
+
+  virtual sections_t &sections() override;
+  virtual std::vector<symbol> &symbols() override;
 
 private:
   uint32_t rva_to_physical(uint32_t rva);
