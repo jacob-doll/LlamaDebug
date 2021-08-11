@@ -7,17 +7,9 @@
 
 #include <llama_debug/types.h>
 #include <llama_debug/binary/section.h>
+#include <llama_debug/binary/symbol.h>
 
 namespace llama_debug {
-
-// add more abstraction
-
-struct symbol
-{
-  std::string lib;
-  std::string name;
-  uintptr_t address;
-};
 
 class binary
 {
@@ -29,7 +21,7 @@ public:
   uintptr_t entry_point() { return m_entry_point; }
   // maybe main func loc?
   virtual sections_t &sections() = 0;
-  virtual std::vector<symbol> &symbols() = 0;
+  virtual symbols_t &symbols() = 0;
 
 protected:
   uintptr_t m_base_addr;

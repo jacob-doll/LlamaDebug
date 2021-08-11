@@ -6,6 +6,7 @@ set(SRCS
     binary/pe/binary_pe.cpp
     binary/pe/dos_header.cpp
     binary/pe/file_header.cpp
+    binary/pe/import_directory.cpp
     binary/pe/optional_header.cpp
     binary/pe/section_header.cpp
 )

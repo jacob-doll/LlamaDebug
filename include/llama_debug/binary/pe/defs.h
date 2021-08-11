@@ -165,15 +165,6 @@ struct pe_image_export_directory
   uint32_t AddressOfNameOrdinals;
 };
 
-struct pe_image_import_directory
-{
-  uint32_t OriginalFirstThunk; /* Import Lookup Table RVA */
-  uint32_t TimeDateStamp;
-  uint32_t ForwarderChain;
-  uint32_t Name;
-  uint32_t FirstThunk; /* Import Address Table RVA */
-};
-
 struct pe_image_hint_name
 {
   uint16_t Hint;

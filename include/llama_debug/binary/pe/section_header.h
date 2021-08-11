@@ -33,12 +33,6 @@ public:
   virtual uint32_t physical_size() const override;
   virtual uintptr_t physical_address() const override;
 
-  // std::string_view name() const;
-  // uint32_t virtual_size() const;
-  // uint32_t virtual_address() const;
-  // uint32_t size_of_raw_data() const;
-  // uint32_t pointer_to_raw_data() const;
-
   uint32_t pointer_to_relocations() const;
   uint32_t pointer_to_line_numbers() const;
   uint16_t number_of_relocations() const;
