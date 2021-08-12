@@ -1,6 +1,7 @@
 #include <llama_debug/binary/pe/dos_header.h>
 
 #include <algorithm>
+#include <iomanip>
 
 namespace llama_debug {
 
@@ -250,5 +251,31 @@ void dos_header::lfanew(const uint32_t lfanew)
   m_lfanew = lfanew;
 }
 
+std::ostream &operator<<(std::ostream &os, const dos_header &header)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Magic: " << header.m_magic << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Bytes on last page of file: " << header.m_cblp << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Pages in file: " << header.m_cp << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Relocations: " << header.m_crlc << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of header in paragraphs: " << header.m_cparhdr << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minimum extra paragraphs needed: " << header.m_minalloc << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Maximum extra paragraphs needed: " << header.m_maxalloc << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Initial (relative) SS value: " << header.m_ss << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Initial SP value: " << header.m_sp << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Checksum: " << header.m_csum << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Initial IP value: " << header.m_ip << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Initial (relative) CS value: " << header.m_cs << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "File address of relocation table: " << header.m_lfarlc << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Overlay number: " << header.m_ovno << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "OEM identifier: " << header.m_oemid << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "OEM information: " << header.m_oeminfo << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "File address of new exe header: " << header.m_lfanew;
+
+  os.flags(old_settings);
+  return os;
+}
 
 }// namespace llama_debug

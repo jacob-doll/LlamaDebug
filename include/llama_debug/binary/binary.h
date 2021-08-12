@@ -1,9 +1,8 @@
 #ifndef LLAMADEBUG_BINARY_H
 #define LLAMADEBUG_BINARY_H
 
-#include <string>
-#include <vector>
 #include <cstdint>
+#include <ostream>
 
 #include <llama_debug/types.h>
 #include <llama_debug/binary/section.h>
@@ -22,6 +21,9 @@ public:
   // maybe main func loc?
   virtual sections_t &sections() = 0;
   virtual symbols_t &symbols() = 0;
+
+  virtual std::ostream& print(std::ostream& os) const;
+  friend std::ostream& operator<<(std::ostream& os, const binary& binary);
 
 protected:
   uintptr_t m_base_addr;

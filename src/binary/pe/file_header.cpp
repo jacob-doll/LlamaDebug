@@ -1,6 +1,8 @@
 #include <llama_debug/binary/pe/file_header.h>
 #include <llama_debug/binary/pe/defs.h>
 
+#include <iomanip>
+
 namespace llama_debug {
 
 file_header::file_header()
@@ -93,5 +95,21 @@ void file_header::characteristics(const uint16_t characteristics)
   m_characteristics = characteristics;
 }
 
+std::ostream &operator<<(std::ostream &os, const file_header &header)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Machine: " << machine_string(header.m_machine) << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Number of Sections: " << header.m_number_of_sections << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Time Date Stamp: " << header.m_time_date_stamp << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Pointer to Symbol Table: " << header.m_pointer_to_symbol_table << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Number of Symbols: " << header.m_number_of_symbols << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Optional Header: " << header.m_size_of_optional_header << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Characteristics: " << characteristic_string(header.m_characteristics);
+
+  os.flags(old_settings);
+  return os;
+}
 
 }// namespace llama_debug

@@ -2,6 +2,8 @@
 #define LLAMADEBUG_FILE_HEADER_H
 
 #include <cstdint>
+#include <ostream>
+#include <set>
 
 namespace llama_debug {
 
@@ -20,7 +22,7 @@ class file_header
 {
 public:
   file_header();
-  file_header(const raw_file_header* data);
+  file_header(const raw_file_header *data);
 
   uint16_t machine() const;
   uint16_t number_of_sections() const;
@@ -37,6 +39,8 @@ public:
   void number_of_symbols(const uint32_t number_of_symbols);
   void size_of_optional_header(const uint16_t size_of_optional_header);
   void characteristics(const uint16_t characteristics);
+
+  friend std::ostream &operator<<(std::ostream &os, const file_header &header);
 
 private:
   uint16_t m_machine;

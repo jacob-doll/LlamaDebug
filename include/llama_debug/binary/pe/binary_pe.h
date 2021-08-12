@@ -25,6 +25,8 @@ public:
   virtual sections_t &sections() override;
   virtual symbols_t &symbols() override;
 
+  virtual std::ostream& print(std::ostream& os) const override;
+
 private:
   uint32_t rva_to_physical(uint32_t rva);
   bool from_buffer(const uint8_t *buffer, uint32_t size);

@@ -1,6 +1,6 @@
 #include <llama_debug/binary/pe/binary_pe.h>
-#include <fstream>
-#include <cstdio>
+
+#include <iomanip>
 
 namespace llama_debug {
 
@@ -55,7 +55,6 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   if (!validate(buffer, size)) return false;
 
   uint32_t offset = 0;
-  printf("Parsing headers!");
   offset += parse_headers(buffer, offset);
   parse_sections(buffer, offset);
 
@@ -138,8 +137,37 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
     //     address_table_offset += sizeof(uint64_t);
     //   }
 
-      offset += sizeof(raw_import_directory);
+    offset += sizeof(raw_import_directory);
   }
+}
+
+std::ostream &binary_pe::print(std::ostream &os) const
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  switch (m_optional_header.magic()) {
+  case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+    os << "PE32\n";
+    break;
+  case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
+    os << "PE32+\n";
+    break;
+  }
+
+  os << "DOS Header:\n";
+  os << std::setfill('-') << std::setw(48) << "\n";
+  os << m_dos_header << "\n";
+
+  os << std::setfill('-') << std::setw(48) << "\n";
+  os << "Signature: " << std::hex << m_signature << "\n";
+  os << std::setfill('-') << std::setw(48) << "\n";
+
+  os << "File Header:\n";
+  os << std::setfill('-') << std::setw(48) << "\n";
+  os << m_file_header << "\n";
+
+  os.flags(old_settings);
+  return os;
 }
 
 }// namespace llama_debug

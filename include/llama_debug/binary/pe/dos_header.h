@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <ostream>
 
 namespace llama_debug {
 
@@ -77,6 +78,8 @@ public:
   void oeminfo(const uint16_t oeminfo);
   void res2(const res2_t &res2);
   void lfanew(const uint32_t lfanew);
+
+  friend std::ostream &operator<<(std::ostream &os, const dos_header &header);
 
 private:
   uint16_t m_magic;
