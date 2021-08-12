@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
-#include <llama_debug/debugger.h>
+
+#include "llama_debug/debugger.h"
 
 // Python Bindings
 namespace py = pybind11;

@@ -1,9 +1,9 @@
 #ifndef LLAMADEBUG_SECTION_HEADER_H
 #define LLAMADEBUG_SECTION_HEADER_H
 
-#include <llama_debug/binary/section.h>
-
 #include <cstdint>
+
+#include "llama_debug/binary/section.h"
 
 namespace llama_debug {
 

@@ -10,6 +10,7 @@
 
 namespace llama_debug {
 
+#undef ERROR
 enum ld_debug_status {
   ERROR = 0,
   DEAD,

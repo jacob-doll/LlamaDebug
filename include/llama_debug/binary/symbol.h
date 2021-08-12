@@ -4,8 +4,7 @@
 #include <string>
 #include <cstdint>
 
-namespace llama_debug
-{
+namespace llama_debug {
 
 class symbol
 {
@@ -15,6 +14,6 @@ public:
   virtual uintptr_t address() const = 0;
 };
 
-} // namespace llama_debug
+}// namespace llama_debug
 
-#endif // LLAMADEBUG_SYMBOL_H
+#endif// LLAMADEBUG_SYMBOL_H

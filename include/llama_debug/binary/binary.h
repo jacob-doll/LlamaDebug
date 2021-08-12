@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <ostream>
 
-#include <llama_debug/types.h>
-#include <llama_debug/binary/section.h>
-#include <llama_debug/binary/symbol.h>
+#include "llama_debug/types.h"
+#include "llama_debug/binary/section.h"
+#include "llama_debug/binary/symbol.h"
 
 namespace llama_debug {
 
@@ -22,8 +22,8 @@ public:
   virtual sections_t &sections() = 0;
   virtual symbols_t &symbols() = 0;
 
-  virtual std::ostream& print(std::ostream& os) const;
-  friend std::ostream& operator<<(std::ostream& os, const binary& binary);
+  virtual std::ostream &print(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, const binary &binary);
 
 protected:
   uintptr_t m_base_addr;

@@ -1,7 +1,7 @@
-#include <llama_debug/binary/pe/dos_header.h>
-
 #include <algorithm>
 #include <iomanip>
+
+#include "llama_debug/binary/pe/dos_header.h"
 
 namespace llama_debug {
 

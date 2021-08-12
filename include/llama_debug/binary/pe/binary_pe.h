@@ -1,15 +1,15 @@
 #ifndef LLAMADEBUG_BINARYPE64_H
 #define LLAMADEBUG_BINARYPE64_H
 
-#include <llama_debug/binary/binary.h>
-#include <llama_debug/binary/pe/defs.h>
-#include <llama_debug/binary/pe/dos_header.h>
-#include <llama_debug/binary/pe/file_header.h>
-#include <llama_debug/binary/pe/import_directory.h>
-#include <llama_debug/binary/pe/optional_header.h>
-#include <llama_debug/binary/pe/section_header.h>
-
 #include <vector>
+
+#include "llama_debug/binary/binary.h"
+#include "llama_debug/binary/pe/defs.h"
+#include "llama_debug/binary/pe/dos_header.h"
+#include "llama_debug/binary/pe/file_header.h"
+#include "llama_debug/binary/pe/import_directory.h"
+#include "llama_debug/binary/pe/optional_header.h"
+#include "llama_debug/binary/pe/section_header.h"
 
 namespace llama_debug {
 
@@ -25,7 +25,7 @@ public:
   virtual sections_t &sections() override;
   virtual symbols_t &symbols() override;
 
-  virtual std::ostream& print(std::ostream& os) const override;
+  virtual std::ostream &print(std::ostream &os) const override;
 
 private:
   uint32_t rva_to_physical(uint32_t rva);

@@ -4,8 +4,7 @@
 #include <cstdint>
 #include <string>
 
-namespace llama_debug
-{
+namespace llama_debug {
 
 class section
 {
@@ -16,8 +15,8 @@ public:
   virtual uint32_t physical_size() const = 0;
   virtual uintptr_t physical_address() const = 0;
 };
-  
-} // namespace llama_debug
+
+}// namespace llama_debug
 
 
-#endif // LLAMADEBUG_SECTION_H
+#endif// LLAMADEBUG_SECTION_H
