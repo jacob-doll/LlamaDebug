@@ -31,7 +31,7 @@ public:
   section_header();
   section_header(const raw_section_header *data);
 
-  virtual std::string name() const override;
+  virtual std::string &name() override;
   virtual uint32_t virtual_size() const override;
   virtual uintptr_t virtual_address() const override;
   virtual uint32_t physical_size() const override;
@@ -41,7 +41,7 @@ public:
   uint32_t pointer_to_line_numbers() const;
   uint16_t number_of_relocations() const;
   uint16_t number_of_line_numbers() const;
-  section_characteristics_t characteristics() const;
+  section_characteristics_t &characteristics();
 
   void name(const std::string_view &name);
   void virtual_size(const uint32_t virtual_size);

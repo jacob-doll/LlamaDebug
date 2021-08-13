@@ -245,7 +245,7 @@ subsystem_t optional_header::subsystem() const
   return m_subsystem;
 }
 
-std::set<dll_characteristic_t> optional_header::dll_characteristics() const
+std::set<dll_characteristic_t> &optional_header::dll_characteristics()
 {
   return m_dll_characteristics;
 }
@@ -280,7 +280,7 @@ uint32_t optional_header::number_of_rva_and_sizes() const
   return m_number_of_rva_and_sizes;
 }
 
-std::array<data_directory, IMAGE_NUMBEROF_DIRECTORY_ENTRIES> optional_header::data_directories() const
+std::array<data_directory, IMAGE_NUMBEROF_DIRECTORY_ENTRIES> &optional_header::data_directories()
 {
   return m_data_directories;
 }

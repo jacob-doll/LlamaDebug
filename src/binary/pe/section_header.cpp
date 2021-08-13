@@ -37,7 +37,7 @@ section_header::section_header(const raw_section_header *data)
   }
 }
 
-std::string section_header::name() const
+std::string &section_header::name()
 {
   return m_name;
 }
@@ -82,7 +82,7 @@ uint16_t section_header::number_of_line_numbers() const
   return m_number_of_line_numbers;
 }
 
-std::set<section_characteristic_t> section_header::characteristics() const
+std::set<section_characteristic_t> &section_header::characteristics()
 {
   return m_characteristics;
 }

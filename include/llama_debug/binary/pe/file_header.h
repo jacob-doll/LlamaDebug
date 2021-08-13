@@ -34,7 +34,7 @@ public:
   uint32_t pointer_to_symbol_table() const;
   uint32_t number_of_symbols() const;
   uint16_t size_of_optional_header() const;
-  characteristics_t characteristics() const;
+  characteristics_t &characteristics();
 
   void machine(const machine_t machine);
   void number_of_sections(const uint16_t number_of_sections);

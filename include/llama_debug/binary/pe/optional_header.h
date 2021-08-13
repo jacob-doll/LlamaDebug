@@ -122,14 +122,14 @@ public:
   uint32_t size_of_headers() const;
   uint32_t checksum() const;
   subsystem_t subsystem() const;
-  dll_characteristics_t dll_characteristics() const;
+  dll_characteristics_t &dll_characteristics();
   uint64_t size_of_stack_reserve() const;
   uint64_t size_of_stack_commit() const;
   uint64_t size_of_heap_reserve() const;
   uint64_t size_of_heap_commit() const;
   uint32_t loader_flags() const;
   uint32_t number_of_rva_and_sizes() const;
-  data_directory_t data_directories() const;
+  data_directory_t &data_directories();
 
   void magic(const magic_t magic);
   void major_linker_version(const uint8_t major_linker_version);

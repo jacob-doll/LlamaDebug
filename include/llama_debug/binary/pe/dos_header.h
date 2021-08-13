@@ -53,10 +53,10 @@ public:
   uint16_t cs() const;
   uint16_t lfarlc() const;
   uint16_t ovno() const;
-  res_t res() const;
+  res_t &res();
   uint16_t oemid() const;
   uint16_t oeminfo() const;
-  res2_t res2() const;
+  res2_t &res2();
   uint32_t lfanew() const;
 
   void magic(const uint16_t magic);

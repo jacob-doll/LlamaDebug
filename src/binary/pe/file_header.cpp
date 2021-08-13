@@ -63,7 +63,7 @@ uint16_t file_header::size_of_optional_header() const
   return m_size_of_optional_header;
 }
 
-std::set<characteristic_t> file_header::characteristics() const
+std::set<characteristic_t> &file_header::characteristics()
 {
   return m_characteristics;
 }

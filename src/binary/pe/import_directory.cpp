@@ -60,12 +60,12 @@ uint32_t import_directory::import_address_table_rva() const
   return m_import_address_table_rva;
 }
 
-std::string import_directory::name() const
+std::string &import_directory::name()
 {
   return m_name;
 }
 
-std::vector<import_entry> import_directory::import_entries() const
+std::vector<import_entry> &import_directory::import_entries()
 {
   return m_import_entries;
 }

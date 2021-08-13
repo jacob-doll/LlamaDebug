@@ -131,7 +131,7 @@ uint16_t dos_header::ovno() const
   return m_ovno;
 }
 
-std::array<uint16_t, 4> dos_header::res() const
+std::array<uint16_t, 4> &dos_header::res()
 {
   return m_res;
 }
@@ -146,7 +146,7 @@ uint16_t dos_header::oeminfo() const
   return m_oeminfo;
 }
 
-std::array<uint16_t, 10> dos_header::res2() const
+std::array<uint16_t, 10> &dos_header::res2()
 {
   return m_res2;
 }

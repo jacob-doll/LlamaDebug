@@ -34,8 +34,8 @@ public:
   uint32_t forwarder_chain() const;
   uint32_t name_rva() const;
   uint32_t import_address_table_rva() const;
-  std::string &name() const;
-  import_entries_t &import_entries() const;
+  std::string &name();
+  import_entries_t &import_entries();
 
   void import_lookup_table_rva(const uint32_t import_lookup_table_rva);
   void time_date_stamp(const uint32_t time_date_stamp);

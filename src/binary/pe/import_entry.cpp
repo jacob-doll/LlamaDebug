@@ -24,12 +24,12 @@ import_entry::import_entry(const std::string &lib,
     m_address_rva{ address_rva }
 {}
 
-std::string import_entry::lib() const
+std::string &import_entry::lib()
 {
   return m_lib;
 }
 
-std::string import_entry::name() const
+std::string &import_entry::name()
 {
   return m_name;
 }

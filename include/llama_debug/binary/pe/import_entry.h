@@ -21,8 +21,8 @@ public:
     uint64_t name_rva,
     uint64_t address_rva);
 
-  virtual std::string lib() const override;
-  virtual std::string name() const override;
+  virtual std::string &lib() override;
+  virtual std::string &name() override;
   virtual uintptr_t address() const override;
 
   uint16_t hint() const;
