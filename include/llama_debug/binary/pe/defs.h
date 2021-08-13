@@ -182,12 +182,6 @@ struct pe_image_export_directory
   uint32_t AddressOfNameOrdinals;
 };
 
-struct pe_image_hint_name
-{
-  uint16_t Hint;
-  char Name[];
-};
-
 // const std::array<machine_t, 32> &machine_array();
 const std::array<characteristic_t, 15> &characteristic_array();
 const std::array<dll_characteristic_t, 11> &dll_characteristic_array();

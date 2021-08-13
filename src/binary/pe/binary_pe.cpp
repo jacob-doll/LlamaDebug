@@ -112,31 +112,34 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
     raw_import_directory *import_directory_ = (raw_import_directory *)(buffer + offset);
     if (!import_directory_->import_lookup_table_rva) break;
 
-    m_import_directories.emplace_back(import_directory{ import_directory_ });
+    uint32_t name_offset = rva_to_physical(import_directory_->name_rva);
+    char *dll_name = (char *)(buffer + name_offset);
 
-    //   uint32_t name_offset = rva_to_physical(import_directory->Name);
-    //   char *dll_name = (char *)(buffer + name_offset);
+    import_directory directory{ import_directory_, std::string{ dll_name } };
 
-    //   uint32_t lookup_table_offset = rva_to_physical(import_directory->OriginalFirstThunk);
-    //   uint32_t address_table_offset = rva_to_physical(import_directory->FirstThunk);
+    uint32_t lookup_table_offset = rva_to_physical(directory.import_lookup_table_rva());
+    uint32_t address_table_offset = rva_to_physical(directory.import_address_table_rva());
 
-    //   while (true) {
-    //     uint64_t image_thunk = *((uint64_t *)(buffer + lookup_table_offset));
-    //     uint64_t address = *((uint64_t *)(buffer + address_table_offset));
-    //     if (!image_thunk) break;
-    //     if (!(image_thunk & 0x8000000000000000)) {
-    //       name_offset = rva_to_physical((uint32_t)(image_thunk));
-    //       pe_image_hint_name *hint_name = (pe_image_hint_name *)(buffer + name_offset);
-    //       // m_symbols.emplace_back(symbol{
-    //       //   dll_name,
-    //       //   hint_name->Name,
-    //       //   address });
-    //     }
+    while (true) {
+      uint64_t name_rva = *((uint64_t *)(buffer + lookup_table_offset));
+      uint64_t address = *((uint64_t *)(buffer + address_table_offset));
+      if (!name_rva) break;
+      if (!(name_rva & 0x8000000000000000)) {
+        name_offset = rva_to_physical((uint32_t)(name_rva));
+        raw_hint_name *hint_name_ = (raw_hint_name *)(buffer + name_offset);
+        directory.add_import_entry(import_entry{
+          std::string{ dll_name },
+          hint_name_,
+          address,
+          name_rva,
+          0 });
+      }
 
-    //     lookup_table_offset += sizeof(uint64_t);
-    //     address_table_offset += sizeof(uint64_t);
-    //   }
+      lookup_table_offset += sizeof(uint64_t);
+      address_table_offset += sizeof(uint64_t);
+    }
 
+    m_import_directories.emplace_back(directory);
     offset += sizeof(raw_import_directory);
   }
 }
@@ -177,6 +180,16 @@ std::ostream &binary_pe::print(std::ostream &os) const
     os << (*section) << "\n";
   }
 
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "IMPORTS\n";
+
+  for (auto import_dir : m_import_directories) {
+    os << std::setfill('-') << std::setw(96) << "\n";
+    os << import_dir.name() << "\n";
+    for (auto import_entry : import_dir.import_entries()) {
+      os << import_entry.name() << "\n";
+    }
+  }
 
   os.flags(old_settings);
   return os;

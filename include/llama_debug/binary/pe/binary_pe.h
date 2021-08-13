@@ -39,10 +39,10 @@ private:
   uint32_t m_signature;
   file_header m_file_header;
   optional_header m_optional_header;
+  sections_t m_sections;
 
   import_directories_t m_import_directories;
 
-  sections_t m_sections;
   symbols_t m_symbols;
 };
 
