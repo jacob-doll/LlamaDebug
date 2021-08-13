@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "llama_debug/binary/pe/optional_header.h"
 #include "llama_debug/binary/pe/defs.h"
 
@@ -27,7 +29,7 @@ optional_header::optional_header()
     m_size_of_headers{ 0x00000000 },
     m_checksum{ 0x00000000 },
     m_subsystem{ 0x00000000 },
-    m_dll_characteristics{ 0x00000000 },
+    m_dll_characteristics{},
     m_size_of_stack_reserve{ 0x0000000000000000 },
     m_size_of_stack_commit{ 0x0000000000000000 },
     m_size_of_heap_reserve{ 0x0000000000000000 },
@@ -61,7 +63,7 @@ optional_header::optional_header(const raw_optional_header32 *data)
     m_size_of_headers{ data->size_of_headers },
     m_checksum{ data->checksum },
     m_subsystem{ data->subsystem },
-    m_dll_characteristics{ data->dll_characteristics },
+    m_dll_characteristics{},
     m_size_of_stack_reserve{ data->size_of_stack_reserve },
     m_size_of_stack_commit{ data->size_of_stack_commit },
     m_size_of_heap_reserve{ data->size_of_heap_reserve },
@@ -74,6 +76,13 @@ optional_header::optional_header(const raw_optional_header32 *data)
     std::begin(data->data_directories),
     std::end(data->data_directories),
     m_data_directories.begin());
+
+  for (auto c : dll_characteristic_array()) {
+    uint16_t c_int = c;
+    if (data->dll_characteristics & c_int) {
+      m_dll_characteristics.insert(c);
+    }
+  }
 }
 
 optional_header::optional_header(const raw_optional_header64 *data)
@@ -100,7 +109,7 @@ optional_header::optional_header(const raw_optional_header64 *data)
     m_size_of_headers{ data->size_of_headers },
     m_checksum{ data->checksum },
     m_subsystem{ data->subsystem },
-    m_dll_characteristics{ data->dll_characteristics },
+    m_dll_characteristics{},
     m_size_of_stack_reserve{ data->size_of_stack_reserve },
     m_size_of_stack_commit{ data->size_of_stack_commit },
     m_size_of_heap_reserve{ data->size_of_heap_reserve },
@@ -113,9 +122,15 @@ optional_header::optional_header(const raw_optional_header64 *data)
     std::begin(data->data_directories),
     std::end(data->data_directories),
     m_data_directories.begin());
+  for (auto c : dll_characteristic_array()) {
+    uint16_t c_int = c;
+    if (data->dll_characteristics & c_int) {
+      m_dll_characteristics.insert(c);
+    }
+  }
 }
 
-uint16_t optional_header::magic() const
+magic_t optional_header::magic() const
 {
   return m_magic;
 }
@@ -225,12 +240,12 @@ uint32_t optional_header::checksum() const
   return m_checksum;
 }
 
-uint16_t optional_header::subsystem() const
+subsystem_t optional_header::subsystem() const
 {
   return m_subsystem;
 }
 
-uint16_t optional_header::dll_characteristics() const
+std::set<dll_characteristic_t> optional_header::dll_characteristics() const
 {
   return m_dll_characteristics;
 }
@@ -270,7 +285,7 @@ std::array<data_directory, IMAGE_NUMBEROF_DIRECTORY_ENTRIES> optional_header::da
   return m_data_directories;
 }
 
-void optional_header::magic(const uint16_t magic)
+void optional_header::magic(const magic_t magic)
 {
   m_magic = magic;
 }
@@ -380,12 +395,12 @@ void optional_header::checksum(const uint32_t checksum)
   m_checksum = checksum;
 }
 
-void optional_header::subsystem(const uint16_t subsystem)
+void optional_header::subsystem(const subsystem_t subsystem)
 {
   m_subsystem = subsystem;
 }
 
-void optional_header::dll_characteristics(const uint16_t dll_characteristics)
+void optional_header::dll_characteristics(const std::set<dll_characteristic_t> &dll_characteristics)
 {
   m_dll_characteristics = dll_characteristics;
 }
@@ -425,5 +440,66 @@ void optional_header::data_directories(const std::array<data_directory, IMAGE_NU
   m_data_directories = data_directories;
 }
 
+std::ostream &operator<<(std::ostream &os, const optional_header &header)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Magic: " << magic_string(header.m_magic) << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Major Linker Version: " << header.m_major_linker_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minor Linker Version: " << header.m_minor_linker_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Code: " << header.m_size_of_code << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Initialized Data: " << header.m_size_of_initialized_data << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Uninitialized Data: " << header.m_size_of_uninitialized_data << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Address of Entry Point: " << header.m_address_of_entry_point << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Base of Code: " << header.m_base_of_code << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Base of Data: " << header.m_base_of_data << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Image Base: " << header.m_image_base << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Section Alignment: " << header.m_section_alignment << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "File Alignment: " << header.m_file_alignment << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Major OS Version: " << header.m_major_operating_system_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minor OS Version: " << header.m_minor_operating_system_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Major Image Version: " << header.m_major_image_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minor Image Version: " << header.m_minor_image_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Major Subsystem Version: " << header.m_major_subsystem_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minor Subsystem Version: " << header.m_minor_subsystem_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Win32 Version Value: " << header.m_win32_version_value << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Image: " << header.m_size_of_image << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Headers: " << header.m_size_of_headers << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Checksum: " << header.m_checksum << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Subsystem: " << subsystem_string(header.m_subsystem) << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "DLL Characteristics: ";
+  auto it = header.m_dll_characteristics.begin();
+  auto end = header.m_dll_characteristics.end();
+  for (; it != end; ++it) {
+    if (it != header.m_dll_characteristics.begin()) {
+      os << std::left << std::setw(48) << std::setfill(' ') << " ";
+    }
+    os << dll_characteristic_string(*it) << "\n";
+  }
+
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Stack Reserve: " << header.m_size_of_stack_reserve << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Stack Commit: " << header.m_size_of_stack_commit << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Heap Reserve: " << header.m_size_of_heap_reserve << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Size of Heap Commit: " << header.m_size_of_heap_commit << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Loader Flags: " << header.m_loader_flags << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Number of Data Directories: " << header.m_number_of_rva_and_sizes << "\n";
+
+  for (int i = 0; i < header.m_data_directories.size(); i++) {
+    os << std::setfill('-') << std::setw(96) << "";
+    os << "\n";
+    os << directory_entry_string(static_cast<directory_entry_t>(i)) << "\n";
+    data_directory dir = header.m_data_directories.at(i);
+    os << std::left << std::setw(48) << std::setfill(' ') << "Virtual Adress: " << dir.virtual_address << "\n";
+    os << std::left << std::setw(48) << std::setfill(' ') << "Size: " << dir.size;
+    if (i < header.m_data_directories.size() - 1) {
+      os << "\n";
+    }
+  }
+  // os << std::left << std::setw(48) << std::setfill(' ') << "xxxx: " << header.m_data_directories << "\n";
+
+  os.flags(old_settings);
+  return os;
+}
 
 }// namespace llama_debug

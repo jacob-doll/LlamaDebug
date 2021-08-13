@@ -154,17 +154,20 @@ std::ostream &binary_pe::print(std::ostream &os) const
     break;
   }
 
-  os << "DOS Header:\n";
   os << std::setfill('-') << std::setw(96) << "\n";
+  os << "DOS Header:\n";
   os << m_dos_header << "\n";
 
   os << std::setfill('-') << std::setw(96) << "\n";
   os << "Signature: " << std::hex << m_signature << "\n";
-  os << std::setfill('-') << std::setw(96) << "\n";
 
-  os << "File Header:\n";
   os << std::setfill('-') << std::setw(96) << "\n";
+  os << "File Header:\n";
   os << m_file_header << "\n";
+
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "Optional Header:\n";
+  os << m_optional_header << "\n";
 
   os.flags(old_settings);
   return os;

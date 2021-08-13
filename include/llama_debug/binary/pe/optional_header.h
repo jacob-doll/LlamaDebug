@@ -2,7 +2,11 @@
 #define LLAMADEBUG_OPTIONAL_HEADER_H
 
 #include <cstdint>
+#include <ostream>
 #include <array>
+#include <set>
+
+#include "llama_debug/binary/pe/defs.h"
 
 namespace llama_debug {
 
@@ -89,12 +93,13 @@ class optional_header
 {
 public:
   using data_directory_t = std::array<data_directory, 16>;
+  using dll_characteristics_t = std::set<dll_characteristic_t>;
 
   optional_header();
   optional_header(const raw_optional_header32 *data);
   optional_header(const raw_optional_header64 *data);
 
-  uint16_t magic() const;
+  magic_t magic() const;
   uint8_t major_linker_version() const;
   uint8_t minor_linker_version() const;
   uint32_t size_of_code() const;
@@ -116,8 +121,8 @@ public:
   uint32_t size_of_image() const;
   uint32_t size_of_headers() const;
   uint32_t checksum() const;
-  uint16_t subsystem() const;
-  uint16_t dll_characteristics() const;
+  subsystem_t subsystem() const;
+  dll_characteristics_t dll_characteristics() const;
   uint64_t size_of_stack_reserve() const;
   uint64_t size_of_stack_commit() const;
   uint64_t size_of_heap_reserve() const;
@@ -126,7 +131,7 @@ public:
   uint32_t number_of_rva_and_sizes() const;
   data_directory_t data_directories() const;
 
-  void magic(const uint16_t magic);
+  void magic(const magic_t magic);
   void major_linker_version(const uint8_t major_linker_version);
   void minor_linker_version(const uint8_t minor_linker_version);
   void size_of_code(const uint32_t size_of_code);
@@ -148,8 +153,8 @@ public:
   void size_of_image(const uint32_t size_of_image);
   void size_of_headers(const uint32_t size_of_headers);
   void checksum(const uint32_t checksum);
-  void subsystem(const uint16_t subsystem);
-  void dll_characteristics(const uint16_t dll_characteristics);
+  void subsystem(const subsystem_t subsystem);
+  void dll_characteristics(const dll_characteristics_t &dll_characteristics);
   void size_of_stack_reserve(const uint64_t size_of_stack_reserve);
   void size_of_stack_commit(const uint64_t size_of_stack_commit);
   void size_of_heap_reserve(const uint64_t size_of_heap_reserve);
@@ -158,8 +163,10 @@ public:
   void number_of_rva_and_sizes(const uint32_t number_of_rva_and_sizes);
   void data_directories(const data_directory_t &data_directories);
 
+  friend std::ostream &operator<<(std::ostream &os, const optional_header &header);
+
 private:
-  uint16_t m_magic;
+  magic_t m_magic;
   uint8_t m_major_linker_version;
   uint8_t m_minor_linker_version;
   uint32_t m_size_of_code;
@@ -182,8 +189,8 @@ private:
   uint32_t m_size_of_image;
   uint32_t m_size_of_headers;
   uint32_t m_checksum;
-  uint16_t m_subsystem;
-  uint16_t m_dll_characteristics;
+  subsystem_t m_subsystem;
+  dll_characteristics_t m_dll_characteristics;
   uint64_t m_size_of_stack_reserve;
   uint64_t m_size_of_stack_commit;
   uint64_t m_size_of_heap_reserve;

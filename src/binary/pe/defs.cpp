@@ -61,9 +61,27 @@ const std::array<characteristic_t, 15> &characteristic_array()
   return arr;
 }
 
+const std::array<dll_characteristic_t, 11> &dll_characteristic_array()
+{
+  static const std::array<dll_characteristic_t, 11> arr{
+    IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA,
+    IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE,
+    IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY,
+    IMAGE_DLLCHARACTERISTICS_NX_COMPAT,
+    IMAGE_DLLCHARACTERISTICS_NO_ISOLATION,
+    IMAGE_DLLCHARACTERISTICS_NO_SEH,
+    IMAGE_DLLCHARACTERISTICS_NO_BIND,
+    IMAGE_DLLCHARACTERISTICS_APPCONTAINER,
+    IMAGE_DLLCHARACTERISTICS_WDM_DRIVER,
+    IMAGE_DLLCHARACTERISTICS_GUARD_CF,
+    IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE,
+  };
+  return arr;
+}
+
 const std::string machine_string(machine_t machine)
 {
-  static const std::map<machine_t, std::string> machine_map = {
+  static const std::map<machine_t, std::string> map = {
     { IMAGE_FILE_MACHINE_UNKNOWN, "IMAGE_FILE_MACHINE_UNKNOWN" },
     { IMAGE_FILE_MACHINE_TARGET_HOST, "IMAGE_FILE_MACHINE_TARGET_HOST" },
     { IMAGE_FILE_MACHINE_I386, "IMAGE_FILE_MACHINE_I386" },
@@ -97,13 +115,13 @@ const std::string machine_string(machine_t machine)
     { IMAGE_FILE_MACHINE_CEE, "IMAGE_FILE_MACHINE_CEE" }
   };
 
-  auto it = machine_map.find(machine);
-  return it == machine_map.end() ? "Unkown!" : it->second;
+  auto it = map.find(machine);
+  return it == map.end() ? "Unkown!" : it->second;
 }
 
 const std::string characteristic_string(characteristic_t characteristic)
 {
-  static const std::map<characteristic_t, std::string> characteristic_map = {
+  static const std::map<characteristic_t, std::string> map = {
     { IMAGE_FILE_RELOCS_STRIPPED, "IMAGE_FILE_RELOCS_STRIPPED" },
     { IMAGE_FILE_EXECUTABLE_IMAGE, "IMAGE_FILE_EXECUTABLE_IMAGE" },
     { IMAGE_FILE_LINE_NUMS_STRIPPED, "IMAGE_FILE_LINE_NUMS_STRIPPED" },
@@ -121,6 +139,85 @@ const std::string characteristic_string(characteristic_t characteristic)
     { IMAGE_FILE_BYTES_REVERSED_HI, "IMAGE_FILE_BYTES_REVERSED_HI" }
   };
 
-  auto it = characteristic_map.find(characteristic);
-  return it == characteristic_map.end() ? "Unkown!" : it->second;
+  auto it = map.find(characteristic);
+  return it == map.end() ? "Unkown!" : it->second;
+}
+
+const std::string magic_string(magic_t magic)
+{
+  static const std::map<magic_t, std::string> map = {
+    { IMAGE_NT_OPTIONAL_HDR32_MAGIC, "IMAGE_NT_OPTIONAL_HDR32_MAGIC" },
+    { IMAGE_NT_OPTIONAL_HDR64_MAGIC, "IMAGE_NT_OPTIONAL_HDR64_MAGIC" },
+  };
+
+  auto it = map.find(magic);
+  return it == map.end() ? "Unkown!" : it->second;
+}
+
+const std::string subsystem_string(subsystem_t subsystem)
+{
+  static const std::map<subsystem_t, std::string> map = {
+    { IMAGE_SUBSYSTEM_UNKNOWN, "IMAGE_SUBSYSTEM_UNKNOWN" },
+    { IMAGE_SUBSYSTEM_NATIVE, "IMAGE_SUBSYSTEM_NATIVE" },
+    { IMAGE_SUBSYSTEM_WINDOWS_GUI, "IMAGE_SUBSYSTEM_WINDOWS_GUI" },
+    { IMAGE_SUBSYSTEM_WINDOWS_CUI, "IMAGE_SUBSYSTEM_WINDOWS_CUI" },
+    { IMAGE_SUBSYSTEM_OS2_CUI, "IMAGE_SUBSYSTEM_OS2_CUI" },
+    { IMAGE_SUBSYSTEM_POSIX_CUI, "IMAGE_SUBSYSTEM_POSIX_CUI" },
+    { IMAGE_SUBSYSTEM_NATIVE_WINDOWS, "IMAGE_SUBSYSTEM_NATIVE_WINDOWS" },
+    { IMAGE_SUBSYSTEM_WINDOWS_CE_GUI, "IMAGE_SUBSYSTEM_WINDOWS_CE_GUI" },
+    { IMAGE_SUBSYSTEM_EFI_APPLICATION, "IMAGE_SUBSYSTEM_EFI_APPLICATION" },
+    { IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER, "IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER" },
+    { IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER, "IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER" },
+    { IMAGE_SUBSYSTEM_EFI_ROM, "IMAGE_SUBSYSTEM_EFI_ROM" },
+    { IMAGE_SUBSYSTEM_XBOX, "IMAGE_SUBSYSTEM_XBOX" },
+    { IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION, "IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION" },
+    { IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG, "IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG" },
+  };
+
+  auto it = map.find(subsystem);
+  return it == map.end() ? "Unkown!" : it->second;
+}
+
+const std::string dll_characteristic_string(dll_characteristic_t dll_characteristic)
+{
+  static const std::map<dll_characteristic_t, std::string> map = {
+    { IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA, "IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA" },
+    { IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE, "IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE" },
+    { IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY, "IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY" },
+    { IMAGE_DLLCHARACTERISTICS_NX_COMPAT, "IMAGE_DLLCHARACTERISTICS_NX_COMPAT" },
+    { IMAGE_DLLCHARACTERISTICS_NO_ISOLATION, "IMAGE_DLLCHARACTERISTICS_NO_ISOLATION" },
+    { IMAGE_DLLCHARACTERISTICS_NO_SEH, "IMAGE_DLLCHARACTERISTICS_NO_SEH" },
+    { IMAGE_DLLCHARACTERISTICS_NO_BIND, "IMAGE_DLLCHARACTERISTICS_NO_BIND" },
+    { IMAGE_DLLCHARACTERISTICS_APPCONTAINER, "IMAGE_DLLCHARACTERISTICS_APPCONTAINER" },
+    { IMAGE_DLLCHARACTERISTICS_WDM_DRIVER, "IMAGE_DLLCHARACTERISTICS_WDM_DRIVER" },
+    { IMAGE_DLLCHARACTERISTICS_GUARD_CF, "IMAGE_DLLCHARACTERISTICS_GUARD_CF" },
+    { IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE, "IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE" },
+  };
+
+  auto it = map.find(dll_characteristic);
+  return it == map.end() ? "Unkown!" : it->second;
+}
+
+const std::string directory_entry_string(directory_entry_t directory_entry)
+{
+  static const std::map<directory_entry_t, std::string> map = {
+    { IMAGE_DIRECTORY_ENTRY_EXPORT, "IMAGE_DIRECTORY_ENTRY_EXPORT" },
+    { IMAGE_DIRECTORY_ENTRY_IMPORT, "IMAGE_DIRECTORY_ENTRY_IMPORT" },
+    { IMAGE_DIRECTORY_ENTRY_RESOURCE, "IMAGE_DIRECTORY_ENTRY_RESOURCE" },
+    { IMAGE_DIRECTORY_ENTRY_EXCEPTION, "IMAGE_DIRECTORY_ENTRY_EXCEPTION" },
+    { IMAGE_DIRECTORY_ENTRY_SECURITY, "IMAGE_DIRECTORY_ENTRY_SECURITY" },
+    { IMAGE_DIRECTORY_ENTRY_BASERELOC, "IMAGE_DIRECTORY_ENTRY_BASERELOC" },
+    { IMAGE_DIRECTORY_ENTRY_DEBUG, "IMAGE_DIRECTORY_ENTRY_DEBUG" },
+    { IMAGE_DIRECTORY_ENTRY_ARCHITECTURE, "IMAGE_DIRECTORY_ENTRY_ARCHITECTURE" },
+    { IMAGE_DIRECTORY_ENTRY_GLOBALPTR, "IMAGE_DIRECTORY_ENTRY_GLOBALPTR" },
+    { IMAGE_DIRECTORY_ENTRY_TLS, "IMAGE_DIRECTORY_ENTRY_TLS" },
+    { IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG, "IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG" },
+    { IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT, "IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT" },
+    { IMAGE_DIRECTORY_ENTRY_IAT, "IMAGE_DIRECTORY_ENTRY_IAT" },
+    { IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT, "IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT" },
+    { IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR, "IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR" },
+  };
+
+  auto it = map.find(directory_entry);
+  return it == map.end() ? "Unkown!" : it->second;
 }
