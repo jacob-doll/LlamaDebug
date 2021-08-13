@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_BINARYPE64_H
-#define LLAMADEBUG_BINARYPE64_H
+#ifndef LLAMADEBUG_BINARY_PE_H
+#define LLAMADEBUG_BINARY_PE_H
 
 #include <vector>
 
@@ -48,4 +48,4 @@ private:
 
 }// namespace llama_debug
 
-#endif// LLAMADEBUG_BINARYPE64_H
+#endif// LLAMADEBUG_BINARY_PE_H
