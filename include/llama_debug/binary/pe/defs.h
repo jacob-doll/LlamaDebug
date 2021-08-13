@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <map>
+#include <array>
 #include <string>
 
 #define IMAGE_DOS_SIGNATURE 0x5A4D// MZ
@@ -226,7 +227,10 @@ struct pe_image_hint_name
   char Name[];
 };
 
-const std::string machine_string(uint16_t machine);
-const std::string characteristic_string(uint16_t characteristic);
+const std::array<machine_t, 32> &machine_array();
+const std::array<characteristic_t, 15> &characteristic_array();
+
+const std::string machine_string(machine_t machine);
+const std::string characteristic_string(characteristic_t characteristic);
 
 #endif// LLAMADEBUG_DEFS_H

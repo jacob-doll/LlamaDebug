@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <ctime>
 
 #include "llama_debug/binary/pe/file_header.h"
 #include "llama_debug/binary/pe/defs.h"
@@ -22,10 +23,17 @@ file_header::file_header(const raw_file_header *data)
     m_pointer_to_symbol_table{ data->pointer_to_symbol_table },
     m_number_of_symbols{ data->number_of_symbols },
     m_size_of_optional_header{ data->size_of_optional_header },
-    m_characteristics{ data->characteristics }
-{}
+    m_characteristics{}
+{
+  for (auto c : characteristic_array()) {
+    uint16_t c_int = c;
+    if (data->characteristics & c_int) {
+      m_characteristics.insert(c);
+    }
+  }
+}
 
-uint16_t file_header::machine() const
+machine_t file_header::machine() const
 {
   return m_machine;
 }
@@ -55,12 +63,12 @@ uint16_t file_header::size_of_optional_header() const
   return m_size_of_optional_header;
 }
 
-uint16_t file_header::characteristics() const
+std::set<characteristic_t> file_header::characteristics() const
 {
   return m_characteristics;
 }
 
-void file_header::machine(const uint16_t machine)
+void file_header::machine(const machine_t machine)
 {
   m_machine = machine;
 }
@@ -90,7 +98,7 @@ void file_header::size_of_optional_header(const uint16_t size_of_optional_header
   m_size_of_optional_header = size_of_optional_header;
 }
 
-void file_header::characteristics(const uint16_t characteristics)
+void file_header::characteristics(const characteristics_t &characteristics)
 {
   m_characteristics = characteristics;
 }
@@ -102,11 +110,23 @@ std::ostream &operator<<(std::ostream &os, const file_header &header)
   os << std::hex;
   os << std::left << std::setw(48) << std::setfill(' ') << "Machine: " << machine_string(header.m_machine) << "\n";
   os << std::left << std::setw(48) << std::setfill(' ') << "Number of Sections: " << header.m_number_of_sections << "\n";
-  os << std::left << std::setw(48) << std::setfill(' ') << "Time Date Stamp: " << header.m_time_date_stamp << "\n";
+  std::time_t time_date_stamp_ = header.m_time_date_stamp;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Time Date Stamp: " << std::ctime(&time_date_stamp_);
   os << std::left << std::setw(48) << std::setfill(' ') << "Pointer to Symbol Table: " << header.m_pointer_to_symbol_table << "\n";
   os << std::left << std::setw(48) << std::setfill(' ') << "Number of Symbols: " << header.m_number_of_symbols << "\n";
   os << std::left << std::setw(48) << std::setfill(' ') << "Size of Optional Header: " << header.m_size_of_optional_header << "\n";
-  os << std::left << std::setw(48) << std::setfill(' ') << "Characteristics: " << characteristic_string(header.m_characteristics);
+  os << std::left << std::setw(48) << std::setfill(' ') << "Characteristics: ";
+  auto it = header.m_characteristics.begin();
+  auto end = header.m_characteristics.end();
+  for (; it != end; ++it) {
+    if (it != header.m_characteristics.begin()) {
+      os << std::left << std::setw(48) << std::setfill(' ') << " ";
+    }
+    os << characteristic_string(*it);
+    if (it != --header.m_characteristics.end()) {
+      os << "\n";
+    }
+  }
 
   os.flags(old_settings);
   return os;

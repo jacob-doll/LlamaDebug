@@ -1,8 +1,69 @@
 #include "llama_debug/binary/pe/defs.h"
 
-const std::string machine_string(uint16_t machine)
+const std::array<machine_t, 32> &machine_array()
 {
-  static const std::map<uint16_t, std::string> machine_map = {
+  static const std::array<machine_t, 32> arr{
+    IMAGE_FILE_MACHINE_UNKNOWN,
+    IMAGE_FILE_MACHINE_TARGET_HOST,
+    IMAGE_FILE_MACHINE_I386,
+    IMAGE_FILE_MACHINE_R3000,
+    IMAGE_FILE_MACHINE_R4000,
+    IMAGE_FILE_MACHINE_R10000,
+    IMAGE_FILE_MACHINE_WCEMIPSV2,
+    IMAGE_FILE_MACHINE_ALPHA,
+    IMAGE_FILE_MACHINE_SH3,
+    IMAGE_FILE_MACHINE_SH3DSP,
+    IMAGE_FILE_MACHINE_SH3E,
+    IMAGE_FILE_MACHINE_SH4,
+    IMAGE_FILE_MACHINE_SH5,
+    IMAGE_FILE_MACHINE_ARM,
+    IMAGE_FILE_MACHINE_THUMB,
+    IMAGE_FILE_MACHINE_ARMNT,
+    IMAGE_FILE_MACHINE_AM33,
+    IMAGE_FILE_MACHINE_POWERPC,
+    IMAGE_FILE_MACHINE_POWERPCFP,
+    IMAGE_FILE_MACHINE_IA64,
+    IMAGE_FILE_MACHINE_MIPS16,
+    IMAGE_FILE_MACHINE_ALPHA64,
+    IMAGE_FILE_MACHINE_MIPSFPU,
+    IMAGE_FILE_MACHINE_MIPSFPU16,
+    IMAGE_FILE_MACHINE_AXP64,
+    IMAGE_FILE_MACHINE_TRICORE,
+    IMAGE_FILE_MACHINE_CEF,
+    IMAGE_FILE_MACHINE_EBC,
+    IMAGE_FILE_MACHINE_AMD64,
+    IMAGE_FILE_MACHINE_M32R,
+    IMAGE_FILE_MACHINE_ARM64,
+    IMAGE_FILE_MACHINE_CEE
+  };
+  return arr;
+}
+
+const std::array<characteristic_t, 15> &characteristic_array()
+{
+  static const std::array<characteristic_t, 15> arr{
+    IMAGE_FILE_RELOCS_STRIPPED,
+    IMAGE_FILE_EXECUTABLE_IMAGE,
+    IMAGE_FILE_LINE_NUMS_STRIPPED,
+    IMAGE_FILE_LOCAL_SYMS_STRIPPED,
+    IMAGE_FILE_AGGRESIVE_WS_TRIM,
+    IMAGE_FILE_LARGE_ADDRESS_AWARE,
+    IMAGE_FILE_BYTES_REVERSED_LO,
+    IMAGE_FILE_32BIT_MACHINE,
+    IMAGE_FILE_DEBUG_STRIPPED,
+    IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP,
+    IMAGE_FILE_NET_RUN_FROM_SWAP,
+    IMAGE_FILE_SYSTEM,
+    IMAGE_FILE_DLL,
+    IMAGE_FILE_UP_SYSTEM_ONLY,
+    IMAGE_FILE_BYTES_REVERSED_HI,
+  };
+  return arr;
+}
+
+const std::string machine_string(machine_t machine)
+{
+  static const std::map<machine_t, std::string> machine_map = {
     { IMAGE_FILE_MACHINE_UNKNOWN, "IMAGE_FILE_MACHINE_UNKNOWN" },
     { IMAGE_FILE_MACHINE_TARGET_HOST, "IMAGE_FILE_MACHINE_TARGET_HOST" },
     { IMAGE_FILE_MACHINE_I386, "IMAGE_FILE_MACHINE_I386" },
@@ -40,9 +101,9 @@ const std::string machine_string(uint16_t machine)
   return it == machine_map.end() ? "Unkown!" : it->second;
 }
 
-const std::string characteristic_string(uint16_t characteristic)
+const std::string characteristic_string(characteristic_t characteristic)
 {
-  static const std::map<uint16_t, std::string> characteristic_map = {
+  static const std::map<characteristic_t, std::string> characteristic_map = {
     { IMAGE_FILE_RELOCS_STRIPPED, "IMAGE_FILE_RELOCS_STRIPPED" },
     { IMAGE_FILE_EXECUTABLE_IMAGE, "IMAGE_FILE_EXECUTABLE_IMAGE" },
     { IMAGE_FILE_LINE_NUMS_STRIPPED, "IMAGE_FILE_LINE_NUMS_STRIPPED" },
