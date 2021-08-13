@@ -1,5 +1,5 @@
 #include "llama_debug/binary/binary.h"
-#include "llama_debug/binary/pe/binary_pe.h"
+#include "llama_debug/binary/pe/pe_binary.h"
 #include "llama_debug/binary/mmap_file.h"
 
 namespace llama_debug {
@@ -17,8 +17,8 @@ binary *binary::from_file(const std::string &filename)
 binary *binary::from_buffer(const uint8_t *buffer, uint32_t size)
 {
   binary *ret = nullptr;
-  if (binary_pe::validate(buffer, size)) {
-    ret = new binary_pe(buffer, size);
+  if (pe_binary::validate(buffer, size)) {
+    ret = new pe_binary(buffer, size);
   }
   return ret;
 }

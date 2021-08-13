@@ -89,15 +89,15 @@ struct raw_optional_header64
   data_directory data_directories[16];
 };
 
-class optional_header
+class pe_optional_header
 {
 public:
   using data_directory_t = std::array<data_directory, 16>;
   using dll_characteristics_t = std::set<dll_characteristic_t>;
 
-  optional_header();
-  optional_header(const raw_optional_header32 *data);
-  optional_header(const raw_optional_header64 *data);
+  pe_optional_header();
+  pe_optional_header(const raw_optional_header32 *data);
+  pe_optional_header(const raw_optional_header64 *data);
 
   magic_t magic() const;
   uint8_t major_linker_version() const;
@@ -163,7 +163,7 @@ public:
   void number_of_rva_and_sizes(const uint32_t number_of_rva_and_sizes);
   void data_directories(const data_directory_t &data_directories);
 
-  friend std::ostream &operator<<(std::ostream &os, const optional_header &header);
+  friend std::ostream &operator<<(std::ostream &os, const pe_optional_header &header);
 
 private:
   magic_t m_magic;

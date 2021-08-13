@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_FILE_HEADER_H
-#define LLAMADEBUG_FILE_HEADER_H
+#ifndef LLAMADEBUG_PE_FILE_HEADER_H
+#define LLAMADEBUG_PE_FILE_HEADER_H
 
 #include <cstdint>
 #include <ostream>
@@ -20,13 +20,13 @@ struct raw_file_header
   uint16_t characteristics;
 };
 
-class file_header
+class pe_file_header
 {
 public:
   using characteristics_t = std::set<characteristic_t>;
 
-  file_header();
-  file_header(const raw_file_header *data);
+  pe_file_header();
+  pe_file_header(const raw_file_header *data);
 
   machine_t machine() const;
   uint16_t number_of_sections() const;
@@ -44,7 +44,7 @@ public:
   void size_of_optional_header(const uint16_t size_of_optional_header);
   void characteristics(const characteristics_t &characteristics);
 
-  friend std::ostream &operator<<(std::ostream &os, const file_header &header);
+  friend std::ostream &operator<<(std::ostream &os, const pe_file_header &header);
 
 private:
   machine_t m_machine;
@@ -59,4 +59,4 @@ private:
 }// namespace llama_debug
 
 
-#endif// LLAMADEBUG_FILE_HEADER_H
+#endif// LLAMADEBUG_PE_FILE_HEADER_H

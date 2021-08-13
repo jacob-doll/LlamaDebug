@@ -1,10 +1,10 @@
-#ifndef LLAMADEBUG_IMPORT_DIRECTORY_H
-#define LLAMADEBUG_IMPORT_DIRECTORY_H
+#ifndef LLAMADEBUG_PE_IMPORT_DIRECTORY_H
+#define LLAMADEBUG_PE_IMPORT_DIRECTORY_H
 
 #include <cstdint>
 #include <vector>
 
-#include "llama_debug/binary/pe/import_entry.h"
+#include "llama_debug/binary/pe/pe_import_entry.h"
 
 namespace llama_debug {
 
@@ -17,15 +17,15 @@ struct raw_import_directory
   uint32_t import_address_table_rva;
 };
 
-class import_directory
+class pe_import_directory
 {
 public:
-  using import_entries_t = std::vector<import_entry>;
+  using import_entries_t = std::vector<pe_import_entry>;
 
-  import_directory();
-  import_directory(const raw_import_directory *data,
+  pe_import_directory();
+  pe_import_directory(const raw_import_directory *data,
     const std::string &name);
-  import_directory(const raw_import_directory *data,
+  pe_import_directory(const raw_import_directory *data,
     const std::string &name,
     const import_entries_t &import_entries);
 
@@ -45,7 +45,7 @@ public:
   void name(const std::string &name);
   void import_entries(const import_entries_t &import_entries);
 
-  void add_import_entry(const import_entry &entry);
+  void add_import_entry(const pe_import_entry &entry);
 
 private:
   uint32_t m_import_lookup_table_rva;
@@ -59,4 +59,4 @@ private:
 
 }// namespace llama_debug
 
-#endif// LLAMADEBUG_IMPORT_DIRECTORY_H
+#endif// LLAMADEBUG_PE_IMPORT_DIRECTORY_H

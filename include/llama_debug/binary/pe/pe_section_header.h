@@ -23,13 +23,13 @@ struct raw_section_header
   uint32_t characteristics;
 };
 
-class section_header : public section
+class pe_section_header : public section
 {
 public:
   using section_characteristics_t = std::set<section_characteristic_t>;
 
-  section_header();
-  section_header(const raw_section_header *data);
+  pe_section_header();
+  pe_section_header(const raw_section_header *data);
 
   virtual std::string &name() override;
   virtual uint32_t virtual_size() const override;

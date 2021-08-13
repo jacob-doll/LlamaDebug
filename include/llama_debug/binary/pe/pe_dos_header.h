@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_DOS_HEADER_H
-#define LLAMADEBUG_DOS_HEADER_H
+#ifndef LLAMADEBUG_PE_DOS_HEADER_H
+#define LLAMADEBUG_PE_DOS_HEADER_H
 
 #include <array>
 #include <cstdint>
@@ -30,14 +30,14 @@ struct raw_dos_header
   uint32_t lfanew;
 };
 
-class dos_header
+class pe_dos_header
 {
 public:
   using res_t = std::array<uint16_t, 4>;
   using res2_t = std::array<uint16_t, 10>;
 
-  dos_header();
-  dos_header(const raw_dos_header *data);
+  pe_dos_header();
+  pe_dos_header(const raw_dos_header *data);
 
   uint16_t magic() const;
   uint16_t cblp() const;
@@ -79,7 +79,7 @@ public:
   void res2(const res2_t &res2);
   void lfanew(const uint32_t lfanew);
 
-  friend std::ostream &operator<<(std::ostream &os, const dos_header &header);
+  friend std::ostream &operator<<(std::ostream &os, const pe_dos_header &header);
 
 private:
   uint16_t m_magic;
@@ -105,4 +105,4 @@ private:
 
 }// namespace llama_debug
 
-#endif// LLAMADEBUG_DOS_HEADER_H
+#endif// LLAMADEBUG_PE_DOS_HEADER_H

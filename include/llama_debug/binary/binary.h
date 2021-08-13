@@ -20,7 +20,6 @@ public:
   uintptr_t entry_point() { return m_entry_point; }
   // maybe main func loc?
   virtual sections_t &sections() = 0;
-  virtual symbols_t &symbols() = 0;
 
   virtual std::ostream &print(std::ostream &os) const;
   friend std::ostream &operator<<(std::ostream &os, const binary &binary);

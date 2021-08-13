@@ -1,15 +1,15 @@
 #include <iomanip>
 
-#include "llama_debug/binary/pe/binary_pe.h"
+#include "llama_debug/binary/pe/pe_binary.h"
 
 namespace llama_debug {
 
-binary_pe::binary_pe(const uint8_t *buffer, uint32_t size)
+pe_binary::pe_binary(const uint8_t *buffer, uint32_t size)
 {
   from_buffer(buffer, size);
 }
 
-bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
+bool pe_binary::validate(const uint8_t *buffer, uint32_t size)
 {
   // Must have the default MS-Dos header
   if (size < sizeof(raw_dos_header)) return false;
@@ -28,17 +28,12 @@ bool binary_pe::validate(const uint8_t *buffer, uint32_t size)
   return false;
 }
 
-sections_t &binary_pe::sections()
+sections_t &pe_binary::sections()
 {
   return m_sections;
 }
 
-symbols_t &binary_pe::symbols()
-{
-  return m_symbols;
-}
-
-uint32_t binary_pe::rva_to_physical(uint32_t rva)
+uint32_t pe_binary::rva_to_physical(uint32_t rva)
 {
   for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
     uint32_t section_virtual_address = m_sections.at(i)->virtual_address();
@@ -50,7 +45,7 @@ uint32_t binary_pe::rva_to_physical(uint32_t rva)
   return rva;
 }
 
-bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
+bool pe_binary::from_buffer(const uint8_t *buffer, uint32_t size)
 {
   if (!validate(buffer, size)) return false;
 
@@ -65,10 +60,10 @@ bool binary_pe::from_buffer(const uint8_t *buffer, uint32_t size)
   return true;
 }
 
-uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
+uint32_t pe_binary::parse_headers(const uint8_t *buffer, uint32_t offset)
 {
   const raw_dos_header *dos_header_ = (const raw_dos_header *)buffer;
-  m_dos_header = dos_header{ dos_header_ };
+  m_dos_header = pe_dos_header{ dos_header_ };
 
   offset = m_dos_header.lfanew();
 
@@ -76,18 +71,18 @@ uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
   offset += sizeof(m_signature);
 
   const raw_file_header *file_header_ = (const raw_file_header *)(buffer + offset);
-  m_file_header = file_header{ file_header_ };
+  m_file_header = pe_file_header{ file_header_ };
   offset += sizeof(raw_file_header);
 
   uint16_t optional_magic;
   std::memcpy(&optional_magic, buffer + m_dos_header.lfanew() + 0x18, sizeof(optional_magic));
   if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
     const raw_optional_header32 *optional_header_ = (const raw_optional_header32 *)(buffer + offset);
-    m_optional_header = optional_header{ optional_header_ };
+    m_optional_header = pe_optional_header{ optional_header_ };
     offset += sizeof(raw_optional_header32);
   } else if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
     const raw_optional_header64 *optional_header_ = (const raw_optional_header64 *)(buffer + offset);
-    m_optional_header = optional_header{ optional_header_ };
+    m_optional_header = pe_optional_header{ optional_header_ };
     offset += sizeof(raw_optional_header64);
   }
 
@@ -96,17 +91,17 @@ uint32_t binary_pe::parse_headers(const uint8_t *buffer, uint32_t offset)
   return offset;
 }
 
-void binary_pe::parse_sections(const uint8_t *buffer, uint32_t offset)
+void pe_binary::parse_sections(const uint8_t *buffer, uint32_t offset)
 {
   for (uint16_t i = 0; i < m_file_header.number_of_sections(); i++) {
     const raw_section_header *section_header_ = (const raw_section_header *)(buffer + offset);
     m_sections.emplace_back(
-      std::make_unique<section_header>(section_header_));
+      std::make_unique<pe_section_header>(section_header_));
     offset += sizeof(raw_section_header);
   }
 }
 
-void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
+void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
 {
   while (true) {
     raw_import_directory *import_directory_ = (raw_import_directory *)(buffer + offset);
@@ -115,7 +110,7 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
     uint32_t name_offset = rva_to_physical(import_directory_->name_rva);
     char *dll_name = (char *)(buffer + name_offset);
 
-    import_directory directory{ import_directory_, std::string{ dll_name } };
+    pe_import_directory directory{ import_directory_, std::string{ dll_name } };
 
     uint32_t lookup_table_offset = rva_to_physical(directory.import_lookup_table_rva());
     uint32_t address_table_offset = rva_to_physical(directory.import_address_table_rva());
@@ -127,7 +122,7 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
       if (!(name_rva & 0x8000000000000000)) {
         name_offset = rva_to_physical((uint32_t)(name_rva));
         raw_hint_name *hint_name_ = (raw_hint_name *)(buffer + name_offset);
-        directory.add_import_entry(import_entry{
+        directory.add_import_entry(pe_import_entry{
           std::string{ dll_name },
           hint_name_,
           address,
@@ -144,7 +139,7 @@ void binary_pe::parse_imports(const uint8_t *buffer, uint32_t offset)
   }
 }
 
-std::ostream &binary_pe::print(std::ostream &os) const
+std::ostream &pe_binary::print(std::ostream &os) const
 {
   std::ios::fmtflags old_settings = os.flags();
 

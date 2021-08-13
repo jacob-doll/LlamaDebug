@@ -11,11 +11,11 @@ struct raw_hint_name
   char name[];
 };
 
-class import_entry : public symbol
+class pe_import_entry : public symbol
 {
 public:
-  import_entry();
-  import_entry(const std::string &lib,
+  pe_import_entry();
+  pe_import_entry(const std::string &lib,
     const raw_hint_name *data,
     uintptr_t address,
     uint64_t name_rva,

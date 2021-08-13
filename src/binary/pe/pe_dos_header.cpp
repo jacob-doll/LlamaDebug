@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <iomanip>
 
-#include "llama_debug/binary/pe/dos_header.h"
+#include "llama_debug/binary/pe/pe_dos_header.h"
 
 namespace llama_debug {
 
-dos_header::dos_header()
+pe_dos_header::pe_dos_header()
   : m_magic{ 0x5A4D },
     m_cblp{ 0x0090 },
     m_cp{ 0x0003 },
@@ -28,7 +28,7 @@ dos_header::dos_header()
 
 {}
 
-dos_header::dos_header(
+pe_dos_header::pe_dos_header(
   const raw_dos_header *data)
   : m_magic{ data->magic },
     m_cblp{ data->cblp },
@@ -61,197 +61,197 @@ dos_header::dos_header(
     m_res2.begin());
 }
 
-uint16_t dos_header::magic() const
+uint16_t pe_dos_header::magic() const
 {
   return m_magic;
 }
 
-uint16_t dos_header::cblp() const
+uint16_t pe_dos_header::cblp() const
 {
   return m_cblp;
 }
 
-uint16_t dos_header::cp() const
+uint16_t pe_dos_header::cp() const
 {
   return m_cp;
 }
 
-uint16_t dos_header::crlc() const
+uint16_t pe_dos_header::crlc() const
 {
   return m_crlc;
 }
 
-uint16_t dos_header::cparhdr() const
+uint16_t pe_dos_header::cparhdr() const
 {
   return m_cparhdr;
 }
 
-uint16_t dos_header::minalloc() const
+uint16_t pe_dos_header::minalloc() const
 {
   return m_minalloc;
 }
 
-uint16_t dos_header::maxalloc() const
+uint16_t pe_dos_header::maxalloc() const
 {
   return m_maxalloc;
 }
 
-uint16_t dos_header::ss() const
+uint16_t pe_dos_header::ss() const
 {
   return m_ss;
 }
 
-uint16_t dos_header::sp() const
+uint16_t pe_dos_header::sp() const
 {
   return m_sp;
 }
 
-uint16_t dos_header::csum() const
+uint16_t pe_dos_header::csum() const
 {
   return m_csum;
 }
 
-uint16_t dos_header::ip() const
+uint16_t pe_dos_header::ip() const
 {
   return m_ip;
 }
 
-uint16_t dos_header::cs() const
+uint16_t pe_dos_header::cs() const
 {
   return m_cs;
 }
 
-uint16_t dos_header::lfarlc() const
+uint16_t pe_dos_header::lfarlc() const
 {
   return m_lfarlc;
 }
 
-uint16_t dos_header::ovno() const
+uint16_t pe_dos_header::ovno() const
 {
   return m_ovno;
 }
 
-std::array<uint16_t, 4> &dos_header::res()
+std::array<uint16_t, 4> &pe_dos_header::res()
 {
   return m_res;
 }
 
-uint16_t dos_header::oemid() const
+uint16_t pe_dos_header::oemid() const
 {
   return m_oemid;
 }
 
-uint16_t dos_header::oeminfo() const
+uint16_t pe_dos_header::oeminfo() const
 {
   return m_oeminfo;
 }
 
-std::array<uint16_t, 10> &dos_header::res2()
+std::array<uint16_t, 10> &pe_dos_header::res2()
 {
   return m_res2;
 }
 
-uint32_t dos_header::lfanew() const
+uint32_t pe_dos_header::lfanew() const
 {
   return m_lfanew;
 }
 
-void dos_header::magic(const uint16_t magic)
+void pe_dos_header::magic(const uint16_t magic)
 {
   m_magic = magic;
 }
 
-void dos_header::cblp(const uint16_t cblp)
+void pe_dos_header::cblp(const uint16_t cblp)
 {
   m_cblp = cblp;
 }
 
-void dos_header::cp(const uint16_t cp)
+void pe_dos_header::cp(const uint16_t cp)
 {
   m_cp = cp;
 }
 
-void dos_header::crlc(const uint16_t crlc)
+void pe_dos_header::crlc(const uint16_t crlc)
 {
   m_crlc = crlc;
 }
 
-void dos_header::cparhdr(const uint16_t cparhdr)
+void pe_dos_header::cparhdr(const uint16_t cparhdr)
 {
   m_cparhdr = cparhdr;
 }
 
-void dos_header::minalloc(const uint16_t minalloc)
+void pe_dos_header::minalloc(const uint16_t minalloc)
 {
   m_minalloc = minalloc;
 }
 
-void dos_header::maxalloc(const uint16_t maxalloc)
+void pe_dos_header::maxalloc(const uint16_t maxalloc)
 {
   m_maxalloc = maxalloc;
 }
 
-void dos_header::ss(const uint16_t ss)
+void pe_dos_header::ss(const uint16_t ss)
 {
   m_ss = ss;
 }
 
-void dos_header::sp(const uint16_t sp)
+void pe_dos_header::sp(const uint16_t sp)
 {
   m_sp = sp;
 }
 
-void dos_header::csum(const uint16_t csum)
+void pe_dos_header::csum(const uint16_t csum)
 {
   m_csum = csum;
 }
 
-void dos_header::ip(const uint16_t ip)
+void pe_dos_header::ip(const uint16_t ip)
 {
   m_ip = ip;
 }
 
-void dos_header::cs(const uint16_t cs)
+void pe_dos_header::cs(const uint16_t cs)
 {
   m_cs = cs;
 }
 
-void dos_header::lfarlc(const uint16_t lfarlc)
+void pe_dos_header::lfarlc(const uint16_t lfarlc)
 {
   m_lfarlc = lfarlc;
 }
 
-void dos_header::ovno(const uint16_t ovno)
+void pe_dos_header::ovno(const uint16_t ovno)
 {
   m_ovno = ovno;
 }
 
-void dos_header::res(const res_t &res)
+void pe_dos_header::res(const res_t &res)
 {
   m_res = res;
 }
 
-void dos_header::oemid(const uint16_t oemid)
+void pe_dos_header::oemid(const uint16_t oemid)
 {
   m_oemid = oemid;
 }
 
-void dos_header::oeminfo(const uint16_t oeminfo)
+void pe_dos_header::oeminfo(const uint16_t oeminfo)
 {
   m_oeminfo = oeminfo;
 }
 
-void dos_header::res2(const res2_t &res2)
+void pe_dos_header::res2(const res2_t &res2)
 {
   m_res2 = res2;
 }
 
-void dos_header::lfanew(const uint32_t lfanew)
+void pe_dos_header::lfanew(const uint32_t lfanew)
 {
   m_lfanew = lfanew;
 }
 
-std::ostream &operator<<(std::ostream &os, const dos_header &header)
+std::ostream &operator<<(std::ostream &os, const pe_dos_header &header)
 {
   std::ios::fmtflags old_settings = os.flags();
 

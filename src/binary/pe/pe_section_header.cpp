@@ -1,10 +1,10 @@
 #include <iomanip>
 
-#include "llama_debug/binary/pe/section_header.h"
+#include "llama_debug/binary/pe/pe_section_header.h"
 
 namespace llama_debug {
 
-section_header::section_header()
+pe_section_header::pe_section_header()
   : m_name{},
     m_virtual_size{ 0x00000000 },
     m_virtual_address{ 0x00000000 },
@@ -17,7 +17,7 @@ section_header::section_header()
     m_characteristics{}
 {}
 
-section_header::section_header(const raw_section_header *data)
+pe_section_header::pe_section_header(const raw_section_header *data)
   : m_name{ (const char *)(&data->name[0]), std::size(data->name) },
     m_virtual_size{ data->virtual_size },
     m_virtual_address{ data->virtual_address },
@@ -37,107 +37,107 @@ section_header::section_header(const raw_section_header *data)
   }
 }
 
-std::string &section_header::name()
+std::string &pe_section_header::name()
 {
   return m_name;
 }
 
-uint32_t section_header::virtual_size() const
+uint32_t pe_section_header::virtual_size() const
 {
   return m_virtual_size;
 }
 
-uintptr_t section_header::virtual_address() const
+uintptr_t pe_section_header::virtual_address() const
 {
   return m_virtual_address;
 }
 
-uint32_t section_header::physical_size() const
+uint32_t pe_section_header::physical_size() const
 {
   return m_size_of_raw_data;
 }
 
-uintptr_t section_header::physical_address() const
+uintptr_t pe_section_header::physical_address() const
 {
   return m_pointer_to_raw_data;
 }
 
-uint32_t section_header::pointer_to_relocations() const
+uint32_t pe_section_header::pointer_to_relocations() const
 {
   return m_pointer_to_relocations;
 }
 
-uint32_t section_header::pointer_to_line_numbers() const
+uint32_t pe_section_header::pointer_to_line_numbers() const
 {
   return m_pointer_to_line_numbers;
 }
 
-uint16_t section_header::number_of_relocations() const
+uint16_t pe_section_header::number_of_relocations() const
 {
   return m_number_of_relocations;
 }
 
-uint16_t section_header::number_of_line_numbers() const
+uint16_t pe_section_header::number_of_line_numbers() const
 {
   return m_number_of_line_numbers;
 }
 
-std::set<section_characteristic_t> &section_header::characteristics()
+std::set<section_characteristic_t> &pe_section_header::characteristics()
 {
   return m_characteristics;
 }
 
-void section_header::name(const std::string_view &name)
+void pe_section_header::name(const std::string_view &name)
 {
   m_name = name;
 }
 
-void section_header::virtual_size(const uint32_t virtual_size)
+void pe_section_header::virtual_size(const uint32_t virtual_size)
 {
   m_virtual_size = virtual_size;
 }
 
-void section_header::virtual_address(const uint32_t virtual_address)
+void pe_section_header::virtual_address(const uint32_t virtual_address)
 {
   m_virtual_address = virtual_address;
 }
 
-void section_header::size_of_raw_data(const uint32_t size_of_raw_data)
+void pe_section_header::size_of_raw_data(const uint32_t size_of_raw_data)
 {
   m_size_of_raw_data = size_of_raw_data;
 }
 
-void section_header::pointer_to_raw_data(const uint32_t pointer_to_raw_data)
+void pe_section_header::pointer_to_raw_data(const uint32_t pointer_to_raw_data)
 {
   m_pointer_to_raw_data = pointer_to_raw_data;
 }
 
-void section_header::pointer_to_relocations(const uint32_t pointer_to_relocations)
+void pe_section_header::pointer_to_relocations(const uint32_t pointer_to_relocations)
 {
   m_pointer_to_relocations = pointer_to_relocations;
 }
 
-void section_header::pointer_to_line_numbers(const uint32_t pointer_to_line_numbers)
+void pe_section_header::pointer_to_line_numbers(const uint32_t pointer_to_line_numbers)
 {
   m_pointer_to_line_numbers = pointer_to_line_numbers;
 }
 
-void section_header::number_of_relocations(const uint16_t number_of_relocations)
+void pe_section_header::number_of_relocations(const uint16_t number_of_relocations)
 {
   m_number_of_relocations = number_of_relocations;
 }
 
-void section_header::number_of_line_numbers(const uint16_t number_of_line_numbers)
+void pe_section_header::number_of_line_numbers(const uint16_t number_of_line_numbers)
 {
   m_number_of_line_numbers = number_of_line_numbers;
 }
 
-void section_header::characteristics(const std::set<section_characteristic_t> &characteristics)
+void pe_section_header::characteristics(const std::set<section_characteristic_t> &characteristics)
 {
   m_characteristics = characteristics;
 }
 
-std::ostream &section_header::print(std::ostream &os) const
+std::ostream &pe_section_header::print(std::ostream &os) const
 {
   std::ios::fmtflags old_settings = os.flags();
 

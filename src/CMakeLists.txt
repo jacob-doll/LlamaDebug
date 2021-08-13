@@ -3,14 +3,14 @@ set(SRCS
     binary/binary.cpp
     binary/mmap_file.cpp
     binary/section.cpp
-    binary/pe/binary_pe.cpp
     binary/pe/defs.cpp
-    binary/pe/dos_header.cpp
-    binary/pe/file_header.cpp
-    binary/pe/import_directory.cpp
-    binary/pe/import_entry.cpp
-    binary/pe/optional_header.cpp
-    binary/pe/section_header.cpp
+    binary/pe/pe_binary.cpp
+    binary/pe/pe_dos_header.cpp
+    binary/pe/pe_file_header.cpp
+    binary/pe/pe_import_directory.cpp
+    binary/pe/pe_import_entry.cpp
+    binary/pe/pe_optional_header.cpp
+    binary/pe/pe_section_header.cpp
 )
 
 if (WIN32)
