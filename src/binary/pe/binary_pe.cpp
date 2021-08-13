@@ -169,6 +169,15 @@ std::ostream &binary_pe::print(std::ostream &os) const
   os << "Optional Header:\n";
   os << m_optional_header << "\n";
 
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "SECTIONS\n";
+
+  for (auto &section : m_sections) {
+    os << std::setfill('-') << std::setw(96) << "\n";
+    os << (*section) << "\n";
+  }
+
+
   os.flags(old_settings);
   return os;
 }

@@ -2,8 +2,10 @@
 #define LLAMADEBUG_SECTION_HEADER_H
 
 #include <cstdint>
+#include <set>
 
 #include "llama_debug/binary/section.h"
+#include "llama_debug/binary/pe/defs.h"
 
 namespace llama_debug {
 
@@ -24,6 +26,8 @@ struct raw_section_header
 class section_header : public section
 {
 public:
+  using section_characteristics_t = std::set<section_characteristic_t>;
+
   section_header();
   section_header(const raw_section_header *data);
 
@@ -37,7 +41,7 @@ public:
   uint32_t pointer_to_line_numbers() const;
   uint16_t number_of_relocations() const;
   uint16_t number_of_line_numbers() const;
-  uint32_t characteristics() const;
+  section_characteristics_t characteristics() const;
 
   void name(const std::string_view &name);
   void virtual_size(const uint32_t virtual_size);
@@ -48,7 +52,9 @@ public:
   void pointer_to_line_numbers(const uint32_t pointer_to_line_numbers);
   void number_of_relocations(const uint16_t number_of_relocations);
   void number_of_line_numbers(const uint16_t number_of_line_numbers);
-  void characteristics(const uint32_t characteristics);
+  void characteristics(const section_characteristics_t &characteristics);
+
+  virtual std::ostream &print(std::ostream &os) const override;
 
 private:
   std::string m_name;
@@ -60,7 +66,7 @@ private:
   uint32_t m_pointer_to_line_numbers;
   uint16_t m_number_of_relocations;
   uint16_t m_number_of_line_numbers;
-  uint32_t m_characteristics;
+  section_characteristics_t m_characteristics;
 };
 
 }// namespace llama_debug
