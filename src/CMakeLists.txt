@@ -6,6 +6,8 @@ set(SRCS
     binary/pe/defs.cpp
     binary/pe/pe_binary.cpp
     binary/pe/pe_dos_header.cpp
+    binary/pe/pe_export_directory.cpp
+    binary/pe/pe_export_entry.cpp
     binary/pe/pe_file_header.cpp
     binary/pe/pe_import_directory.cpp
     binary/pe/pe_import_entry.cpp

@@ -7,6 +7,7 @@
 #include "llama_debug/binary/pe/defs.h"
 #include "llama_debug/binary/pe/pe_dos_header.h"
 #include "llama_debug/binary/pe/pe_file_header.h"
+#include "llama_debug/binary/pe/pe_export_directory.h"
 #include "llama_debug/binary/pe/pe_import_directory.h"
 #include "llama_debug/binary/pe/pe_optional_header.h"
 #include "llama_debug/binary/pe/pe_section_header.h"
@@ -30,6 +31,7 @@ private:
   bool from_buffer(const uint8_t *buffer, uint32_t size);
   uint32_t parse_headers(const uint8_t *buffer, uint32_t offset);
   void parse_sections(const uint8_t *buffer, uint32_t offset);
+  void parse_exports(const uint8_t *buffer, uint32_t offset);
   void parse_imports(const uint8_t *buffer, uint32_t offset);
 
 private:
@@ -39,6 +41,7 @@ private:
   pe_optional_header m_optional_header;
   sections_t m_sections;
 
+  pe_export_directory m_export_directory;
   import_directories_t m_import_directories;
 };
 

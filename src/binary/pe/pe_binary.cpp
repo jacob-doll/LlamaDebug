@@ -53,6 +53,10 @@ bool pe_binary::from_buffer(const uint8_t *buffer, uint32_t size)
   offset += parse_headers(buffer, offset);
   parse_sections(buffer, offset);
 
+  const data_directory export_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+  offset = rva_to_physical(export_directory.virtual_address);
+  parse_exports(buffer, offset);
+
   const data_directory import_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_IMPORT);
   offset = rva_to_physical(import_directory.virtual_address);
   parse_imports(buffer, offset);
@@ -101,6 +105,49 @@ void pe_binary::parse_sections(const uint8_t *buffer, uint32_t offset)
   }
 }
 
+void pe_binary::parse_exports(const uint8_t *buffer, uint32_t offset)
+{
+  raw_export_directory *export_directory_ = (raw_export_directory *)(buffer + offset);
+  uint32_t name_offset = rva_to_physical(export_directory_->name_rva);
+
+  char *dir_name = (char *)(buffer + name_offset);
+
+  m_export_directory = { export_directory_, std::string{ dir_name } };
+
+  uint32_t address_table_offset = rva_to_physical(m_export_directory.address_table_rva());
+  uint32_t name_table_offset = rva_to_physical(m_export_directory.name_pointer_rva());
+  uint32_t ordinal_table_offset = rva_to_physical(m_export_directory.ordinal_table_rva());
+
+  raw_export_address *address_table = (raw_export_address *)(buffer + address_table_offset);
+  uint32_t *name_pointer_table = (uint32_t *)(buffer + name_table_offset);
+  uint16_t *ordinal_table = (uint16_t *)(buffer + ordinal_table_offset);
+
+  for (uint32_t i = 0; i < m_export_directory.number_of_names(); i++) {
+    uint16_t ordinal = ordinal_table[i];
+    uint32_t name_rva = name_pointer_table[i];
+
+    uint32_t name_offset = rva_to_physical(name_rva);
+    char *name = (char *)(buffer + name_offset);
+
+    raw_export_address addr = address_table[i];
+    const data_directory export_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+    if (addr.forwarder_rva < export_directory.virtual_address
+        || addr.forwarder_rva >= export_directory.virtual_address + export_directory.size) {
+      name_offset = rva_to_physical(addr.forwarder_rva);
+      char *forwarder_name = (char *)(buffer + name_offset);
+    }
+
+    m_export_directory.add_export_entry(pe_export_entry{
+      std::string{ dir_name },
+      std::string{ name },
+      addr.export_rva + m_base_addr,
+      addr,
+      std::string{},
+      name_rva,
+      ordinal });
+  }
+}
+
 void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
 {
   while (true) {
@@ -108,9 +155,9 @@ void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
     if (!import_directory_->import_lookup_table_rva) break;
 
     uint32_t name_offset = rva_to_physical(import_directory_->name_rva);
-    char *dll_name = (char *)(buffer + name_offset);
+    char *dir_name = (char *)(buffer + name_offset);
 
-    pe_import_directory directory{ import_directory_, std::string{ dll_name } };
+    pe_import_directory directory{ import_directory_, std::string{ dir_name } };
 
     uint32_t lookup_table_offset = rva_to_physical(directory.import_lookup_table_rva());
     uint32_t address_table_offset = rva_to_physical(directory.import_address_table_rva());
@@ -123,7 +170,7 @@ void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
         name_offset = rva_to_physical((uint32_t)(name_rva));
         raw_hint_name *hint_name_ = (raw_hint_name *)(buffer + name_offset);
         directory.add_import_entry(pe_import_entry{
-          std::string{ dll_name },
+          std::string{ dir_name },
           hint_name_,
           address,
           name_rva,
@@ -173,6 +220,14 @@ std::ostream &pe_binary::print(std::ostream &os) const
   for (auto &section : m_sections) {
     os << std::setfill('-') << std::setw(96) << "\n";
     os << (*section) << "\n";
+  }
+
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "EXPORTS\n";
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << m_export_directory.name() << "\n";
+  for (auto export_entry : m_export_directory.export_entries()) {
+    os << export_entry.name() << " | " << export_entry.address() << " | " << export_entry.forwarder_name() << "\n";
   }
 
   os << std::setfill('-') << std::setw(96) << "\n";
