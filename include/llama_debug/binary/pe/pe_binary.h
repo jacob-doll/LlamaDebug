@@ -11,6 +11,7 @@
 #include "llama_debug/binary/pe/pe_import_directory.h"
 #include "llama_debug/binary/pe/pe_optional_header.h"
 #include "llama_debug/binary/pe/pe_section_header.h"
+#include "llama_debug/binary/pe/pe_resource_directory.h"
 
 namespace llama_debug {
 
@@ -31,8 +32,10 @@ private:
   bool from_buffer(const uint8_t *buffer, uint32_t size);
   uint32_t parse_headers(const uint8_t *buffer, uint32_t offset);
   void parse_sections(const uint8_t *buffer, uint32_t offset);
-  void parse_exports(const uint8_t *buffer, uint32_t offset);
-  void parse_imports(const uint8_t *buffer, uint32_t offset);
+
+  void parse_exports(const uint8_t *buffer, const uint32_t offset);
+  void parse_imports(const uint8_t *buffer, const uint32_t offset);
+  void parse_resources(const uint8_t *buffer, const uint32_t offset);
 
 private:
   pe_dos_header m_dos_header;
@@ -43,6 +46,7 @@ private:
 
   pe_export_directory m_export_directory;
   import_directories_t m_import_directories;
+  pe_resource_directory m_resource_root;
 };
 
 }// namespace llama_debug

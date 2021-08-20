@@ -1,6 +1,7 @@
 #include <iomanip>
 
 #include "llama_debug/binary/pe/pe_binary.h"
+#include "llama_debug/binary/pe/pe_resource_directory_entry.h"
 
 namespace llama_debug {
 
@@ -61,6 +62,10 @@ bool pe_binary::from_buffer(const uint8_t *buffer, uint32_t size)
   offset = rva_to_physical(import_directory.virtual_address);
   parse_imports(buffer, offset);
 
+  const data_directory resource_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
+  offset = rva_to_physical(resource_directory.virtual_address);
+  parse_resources(buffer, offset);
+
   return true;
 }
 
@@ -105,7 +110,7 @@ void pe_binary::parse_sections(const uint8_t *buffer, uint32_t offset)
   }
 }
 
-void pe_binary::parse_exports(const uint8_t *buffer, uint32_t offset)
+void pe_binary::parse_exports(const uint8_t *buffer, const uint32_t offset)
 {
   raw_export_directory *export_directory_ = (raw_export_directory *)(buffer + offset);
   uint32_t name_offset = rva_to_physical(export_directory_->name_rva);
@@ -148,10 +153,11 @@ void pe_binary::parse_exports(const uint8_t *buffer, uint32_t offset)
   }
 }
 
-void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
+void pe_binary::parse_imports(const uint8_t *buffer, const uint32_t offset)
 {
+  uint32_t index = offset;
   while (true) {
-    raw_import_directory *import_directory_ = (raw_import_directory *)(buffer + offset);
+    raw_import_directory *import_directory_ = (raw_import_directory *)(buffer + index);
     if (!import_directory_->import_lookup_table_rva) break;
 
     uint32_t name_offset = rva_to_physical(import_directory_->name_rva);
@@ -161,6 +167,7 @@ void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
 
     uint32_t lookup_table_offset = rva_to_physical(directory.import_lookup_table_rva());
     uint32_t address_table_offset = rva_to_physical(directory.import_address_table_rva());
+
 
     while (true) {
       uint64_t name_rva = *((uint64_t *)(buffer + lookup_table_offset));
@@ -182,7 +189,30 @@ void pe_binary::parse_imports(const uint8_t *buffer, uint32_t offset)
     }
 
     m_import_directories.emplace_back(directory);
-    offset += sizeof(raw_import_directory);
+    index += sizeof(raw_import_directory);
+  }
+}
+
+void pe_binary::parse_resources(const uint8_t *buffer, const uint32_t offset)
+{
+  const data_directory resource_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
+  const uint32_t resource_dir_ptr = rva_to_physical(resource_directory.virtual_address);
+
+  raw_resource_directory *root_ = (raw_resource_directory *)(buffer + offset);
+  m_resource_root = pe_resource_directory{ root_ };
+
+  uint16_t num_of_entries = m_resource_root.number_of_id_entries() + m_resource_root.number_of_named_entries();
+  uint32_t index = offset + sizeof(raw_resource_directory);
+  for (uint16_t i = 0; i < num_of_entries; i++) {
+    raw_resource_directory_entry *entry_ = (raw_resource_directory_entry *)(buffer + index);
+    pe_resource_directory_entry entry{ entry_ };
+    // if (entry.is_directory_offset()) {
+    //   uint32_t dir_offset = entry.offset_to_directory() & 0x7FFFFFFF;
+    //   this->parse_resources(buffer, resource_dir_ptr + dir_offset);
+    // }
+
+    m_resource_root.add_entry(pe_resource_directory_entry{ entry_ });
+    index += sizeof(raw_resource_directory_entry);
   }
 }
 
@@ -240,6 +270,17 @@ std::ostream &pe_binary::print(std::ostream &os) const
       os << import_entry.name() << "\n";
     }
   }
+
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "RESOURCES\n";
+
+  // for (auto resource_dir : m_resource_directories) {
+  os << std::setfill('-') << std::setw(96) << "\n";
+  for (auto resource_entry : m_resource_root.entries()) {
+    os << std::hex << resource_entry.id() << "\n";
+    os << std::hex << resource_entry.offset_to_directory() << "\n";
+  }
+  // }
 
   os.flags(old_settings);
   return os;
