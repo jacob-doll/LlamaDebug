@@ -1,17 +1,18 @@
 #include <llama_debug/binary/binary.h>
-#include <llama_debug/binary/pe/pe_binary.h>
+#include <llama_debug/binary/parser.h>
+
 #include <iostream>
 #include <iomanip>
 
 int main()
 {
   using namespace llama_debug;
-  binary *bin = binary::from_file("C:\\Windows\\System32\\msvcrt.dll");
 
-  std::cout << *bin << "\n";
+  auto &bin = parse("C:\\Windows\\System32\\msvcrt.dll");
 
-  // for (symbol sym : bin->symbols()) {
-  //   std::cout << sym.lib << ": " << sym.name << ": " << sym.address << "\n";
-  // }
-  delete bin;
+  if (bin) {
+    std::cout << *bin << "\n";
+  }
+
+  return 0;
 }

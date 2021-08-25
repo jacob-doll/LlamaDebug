@@ -1,16 +1,22 @@
 #include "llama_debug/binary/parser.h"
+#include "llama_debug/binary/mmap_file.h"
 #include "llama_debug/binary/pe/pe_parser.h"
+#include "llama_debug/binary/pe/pe_binary.h"
 
 namespace llama_debug {
 
-static std::unique_ptr<binary> parse(const std::string &filename)
+std::unique_ptr<binary> parse(const std::string &filename)
 {
-  if (pe_binary::validate())
-    return nullptr;
+  mmap_file file{ filename };
+  auto ret = parse(file.ptr(), file.size());
+  return ret;
 }
 
-static std::unique_ptr<binary> parse(const uint8_t *buffer, const uint32_t size)
+std::unique_ptr<binary> parse(const uint8_t *buffer, const uint32_t size)
 {
+  if (pe_binary::validate(buffer, size)) {
+    return pe_parser::parse(buffer, size);
+  }
   return nullptr;
 }
 

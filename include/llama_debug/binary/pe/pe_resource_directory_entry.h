@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <memory>
 
-#include "llama_debug/binary/pe/pe_resource_directory.h"
-#include "llama_debug/binary/pe/pe_resource_data_entry.h"
-
 namespace llama_debug {
+
+class pe_resource_directory;
+class pe_resource_data_entry;
 
 struct raw_resource_directory_entry
 {

@@ -3,11 +3,6 @@
 
 #include <string>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif /* _WIN32 */
-
 namespace llama_debug {
 
 class mmap_file
@@ -25,6 +20,7 @@ private:
 
 private:
 #ifdef _WIN32
+  typedef void *HANDLE;
   HANDLE m_file;
   HANDLE m_map_file;
 #endif

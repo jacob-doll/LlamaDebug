@@ -13,6 +13,7 @@ set(SRCS
     binary/pe/pe_import_directory.cpp
     binary/pe/pe_import_entry.cpp
     binary/pe/pe_optional_header.cpp
+    binary/pe/pe_parser.cpp
     binary/pe/pe_resource_data_entry.cpp
     binary/pe/pe_resource_directory_entry.cpp
     binary/pe/pe_resource_directory.cpp

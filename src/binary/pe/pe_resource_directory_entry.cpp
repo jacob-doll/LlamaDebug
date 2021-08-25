@@ -1,5 +1,8 @@
 #include "llama_debug/binary/pe/pe_resource_directory_entry.h"
 
+#include "llama_debug/binary/pe/pe_resource_directory.h"
+#include "llama_debug/binary/pe/pe_resource_data_entry.h"
+
 namespace llama_debug {
 
 pe_resource_directory_entry::pe_resource_directory_entry()
