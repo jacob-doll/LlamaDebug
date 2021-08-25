@@ -2,6 +2,7 @@
 set(SRCS
     binary/binary.cpp
     binary/mmap_file.cpp
+    binary/parser.cpp
     binary/section.cpp
     binary/pe/defs.cpp
     binary/pe/pe_binary.cpp

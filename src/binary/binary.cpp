@@ -4,25 +4,6 @@
 
 namespace llama_debug {
 
-// here to change filename
-
-binary *binary::from_file(const std::string &filename)
-{
-  mmap_file file(filename);
-  binary *ret = from_buffer(file.ptr(), file.size());
-  file.close();
-  return ret;
-}
-
-binary *binary::from_buffer(const uint8_t *buffer, uint32_t size)
-{
-  binary *ret = nullptr;
-  if (pe_binary::validate(buffer, size)) {
-    ret = new pe_binary(buffer, size);
-  }
-  return ret;
-}
-
 std::ostream &binary::print(std::ostream &os) const
 {
   return os;

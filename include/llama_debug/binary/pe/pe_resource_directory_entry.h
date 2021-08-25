@@ -2,6 +2,7 @@
 #define LLAMADEBUG_PE_RESOURCE_DIRECTORY_ENTRY_H
 
 #include <cstdint>
+#include <memory>
 
 #include "llama_debug/binary/pe/pe_resource_directory.h"
 #include "llama_debug/binary/pe/pe_resource_data_entry.h"
@@ -23,6 +24,9 @@ struct raw_resource_directory_entry
 class pe_resource_directory_entry
 {
 public:
+  using directory_ptr_t = std::shared_ptr<pe_resource_directory>;
+  using data_entry_ptr_t = std::shared_ptr<pe_resource_data_entry>;
+
   pe_resource_directory_entry();
   pe_resource_directory_entry(const raw_resource_directory_entry *data);
 
@@ -30,15 +34,15 @@ public:
   uint32_t id() const;
   uint32_t offset_to_data() const;
   uint32_t offset_to_directory() const;
-  pe_resource_directory *directory() const;
-  pe_resource_data_entry *data_entry() const;
+  directory_ptr_t directory() const;
+  data_entry_ptr_t data_entry() const;
 
   void name(const uint32_t name);
   void id(const uint32_t id);
   void offset_to_data(const uint32_t offset_to_data);
   void offset_to_directory(const uint32_t offset_to_directory);
-  void directory(pe_resource_directory *directory);
-  void data_entry(pe_resource_data_entry *data_entry);
+  void directory(directory_ptr_t directory);
+  void data_entry(data_entry_ptr_t data_entry);
 
   bool is_name();
   bool is_directory_offset();
@@ -52,9 +56,8 @@ private:
     uint32_t m_offset_to_data;
     uint32_t m_offset_to_directory;
   };
-  // TODO: use shared ptrs;
-  pe_resource_directory *m_directory{ nullptr };
-  pe_resource_data_entry *m_data_entry{ nullptr };
+  directory_ptr_t m_directory;
+  data_entry_ptr_t m_data_entry;
 };
 
 }// namespace llama_debug
