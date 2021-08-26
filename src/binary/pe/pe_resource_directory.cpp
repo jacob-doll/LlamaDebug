@@ -1,5 +1,8 @@
+#include <iomanip>
+
 #include "llama_debug/binary/pe/pe_resource_directory.h"
 #include "llama_debug/binary/pe/pe_resource_directory_entry.h"
+#include "llama_debug/binary/pe/pe_resource_data_entry.h"
 
 namespace llama_debug {
 
@@ -107,6 +110,27 @@ void pe_resource_directory::entries(const std::vector<pe_resource_directory_entr
 void pe_resource_directory::add_entry(const pe_resource_directory_entry &entry)
 {
   m_entries.emplace_back(entry);
+}
+
+std::ostream &operator<<(std::ostream &os, const pe_resource_directory &directory)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+
+  for (auto &resource_entry : directory.m_entries) {
+    os << std::setfill('-') << std::setw(96) << "\n";
+    os << "ID: " << resource_entry.id() << "\n";
+    os << "Offset to data: " << resource_entry.offset_to_directory() << "\n";
+    if (resource_entry.directory()) {
+      os << *resource_entry.directory();
+    } else {
+      os << *resource_entry.data_entry();
+    }
+  }
+
+  os.flags(old_settings);
+  return os;
 }
 
 }// namespace llama_debug

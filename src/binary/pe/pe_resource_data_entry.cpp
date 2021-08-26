@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "llama_debug/binary/pe/pe_resource_data_entry.h"
 
 namespace llama_debug {
@@ -54,6 +56,20 @@ void pe_resource_data_entry::code_page(const uint32_t code_page)
 void pe_resource_data_entry::reserved(const uint32_t reserved)
 {
   m_reserved = reserved;
+}
+
+std::ostream &operator<<(std::ostream &os, const pe_resource_data_entry &data_entry)
+{
+  std::ios::fmtflags old_settings = os.flags();
+  os << std::hex;
+
+  os << "Offset to Data: " << data_entry.m_offset_to_data << "\n";
+  os << "Size: " << data_entry.m_size << "\n";
+  os << "Code Page: " << data_entry.m_code_page << "\n";
+  os << "Reserved: " << data_entry.m_reserved;
+
+  os.flags(old_settings);
+  return os;
 }
 
 }// namespace llama_debug

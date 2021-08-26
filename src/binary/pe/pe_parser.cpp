@@ -1,5 +1,6 @@
 #include "llama_debug/binary/pe/pe_parser.h"
 #include "llama_debug/binary/pe/pe_binary.h"
+#include "llama_debug/binary/pe/pe_resource_data_entry.h"
 
 namespace llama_debug {
 
@@ -166,29 +167,43 @@ void pe_parser::parse_imports()
 void pe_parser::parse_resources()
 {
   const data_directory resource_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
-  uint32_t offset = m_binary->rva_to_physical(resource_directory.virtual_address);
   const uint32_t resource_dir_ptr = m_binary->rva_to_physical(resource_directory.virtual_address);
-
-  raw_resource_directory *root_ = (raw_resource_directory *)(m_buffer + offset);
-  m_binary->m_resource_root = pe_resource_directory{ root_ };
-
-  uint16_t num_of_entries = m_binary->m_resource_root.number_of_id_entries() + m_binary->m_resource_root.number_of_named_entries();
-  offset += sizeof(raw_resource_directory);
-  for (uint16_t i = 0; i < num_of_entries; i++) {
-    raw_resource_directory_entry *entry_ = (raw_resource_directory_entry *)(m_buffer + offset);
-    pe_resource_directory_entry entry{ entry_ };
-    // if (entry.is_directory_offset()) {
-    //   uint32_t dir_offset = entry.offset_to_directory() & 0x7FFFFFFF;
-    //   this->parse_resources(buffer, resource_dir_ptr + dir_offset);
-    // }
-
-    m_binary->m_resource_root.add_entry(pe_resource_directory_entry{ entry_ });
-    offset += sizeof(raw_resource_directory_entry);
-  }
+  m_binary->m_resource_root = parse_resource_directory(resource_dir_ptr, 0);
 }
 
-void pe_parser::parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset)
+std::unique_ptr<pe_resource_directory> pe_parser::parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset)
 {
+  uint32_t index = resource_dir_ptr + offset;
+  raw_resource_directory *root_ = (raw_resource_directory *)(m_buffer + index);
+  std::unique_ptr<pe_resource_directory> ret = std::make_unique<pe_resource_directory>(root_);
+
+  uint16_t num_of_entries = ret->number_of_id_entries() + ret->number_of_named_entries();
+  index += sizeof(raw_resource_directory);
+  for (uint16_t i = 0; i < num_of_entries; i++) {
+    raw_resource_directory_entry *entry_ = (raw_resource_directory_entry *)(m_buffer + index);
+    pe_resource_directory_entry entry{ entry_ };
+
+    if (entry.is_directory_offset()) {
+      uint32_t dir_offset = entry.offset_to_directory() & 0x7FFFFFFF;
+      std::shared_ptr<pe_resource_directory> dir = this->parse_resource_directory(resource_dir_ptr, dir_offset);
+      entry.directory(dir);
+    } else {
+      std::shared_ptr<pe_resource_data_entry> data = this->parse_resource_data_entry(resource_dir_ptr, entry.offset_to_data());
+      entry.data_entry(data);
+    }
+
+    ret->add_entry(entry);
+    index += sizeof(raw_resource_directory_entry);
+  }
+  return ret;
 }
+
+std::unique_ptr<pe_resource_data_entry> pe_parser::parse_resource_data_entry(const uint32_t resource_dir_ptr, const uint32_t offset)
+{
+  uint32_t index = resource_dir_ptr + offset;
+  raw_resource_data_entry *data_entry_ = (raw_resource_data_entry *)(m_buffer + index);
+  return std::make_unique<pe_resource_data_entry>(data_entry_);
+}
+
 
 }// namespace llama_debug

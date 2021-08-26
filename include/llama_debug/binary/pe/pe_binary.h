@@ -39,7 +39,7 @@ private:
 
   pe_export_directory m_export_directory;
   import_directories_t m_import_directories;
-  pe_resource_directory m_resource_root;
+  std::unique_ptr<pe_resource_directory> m_resource_root;
 };
 
 }// namespace llama_debug

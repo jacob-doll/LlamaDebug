@@ -2,6 +2,7 @@
 #define LLAMADEBUG_PE_RESOURCE_DATA_ENTRY_H
 
 #include <cstdint>
+#include <ostream>
 
 namespace llama_debug {
 
@@ -28,6 +29,8 @@ public:
   void size(const uint32_t size);
   void code_page(const uint32_t code_page);
   void reserved(const uint32_t reserved);
+
+  friend std::ostream &operator<<(std::ostream &os, const pe_resource_data_entry &data_entry);
 
 private:
   uint32_t m_offset_to_data;

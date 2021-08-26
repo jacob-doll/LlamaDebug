@@ -8,6 +8,8 @@
 
 namespace llama_debug {
 class pe_binary;
+class pe_resource_directory;
+class pe_resource_data_entry;
 
 class pe_parser
 {
@@ -26,7 +28,9 @@ private:
   void parse_exports();
   void parse_imports();
   void parse_resources();
-  void parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset);
+
+  std::unique_ptr<pe_resource_directory> parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset);
+  std::unique_ptr<pe_resource_data_entry> parse_resource_data_entry(const uint32_t resource_dir_ptr, const uint32_t offset);
 
 private:
   const uint8_t *m_buffer;

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <ostream>
 
 #include "llama_debug/binary/pe/pe_resource_directory_entry.h"
 
@@ -45,6 +46,8 @@ public:
   void entries(const resource_directory_entries_t &entries);
 
   void add_entry(const pe_resource_directory_entry &entry);
+
+  friend std::ostream &operator<<(std::ostream &os, const pe_resource_directory &directory);
 
 private:
   uint32_t m_characteristics;

@@ -97,14 +97,7 @@ std::ostream &pe_binary::print(std::ostream &os) const
 
   os << std::setfill('-') << std::setw(96) << "\n";
   os << "RESOURCES\n";
-
-  // for (auto resource_dir : m_resource_directories) {
-  os << std::setfill('-') << std::setw(96) << "\n";
-  for (auto resource_entry : m_resource_root.entries()) {
-    os << std::hex << resource_entry.id() << "\n";
-    os << std::hex << resource_entry.offset_to_directory() << "\n";
-  }
-  // }
+  os << *m_resource_root << "\n";
 
   os.flags(old_settings);
   return os;
