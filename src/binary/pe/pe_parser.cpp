@@ -187,4 +187,8 @@ void pe_parser::parse_resources()
   }
 }
 
+void pe_parser::parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset)
+{
+}
+
 }// namespace llama_debug

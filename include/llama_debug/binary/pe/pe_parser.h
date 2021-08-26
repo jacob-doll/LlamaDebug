@@ -26,6 +26,7 @@ private:
   void parse_exports();
   void parse_imports();
   void parse_resources();
+  void parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset);
 
 private:
   const uint8_t *m_buffer;
