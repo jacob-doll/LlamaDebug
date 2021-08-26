@@ -18,9 +18,9 @@ private:
   pe_parser(const uint8_t *buffer, const uint32_t size);
 
   /* NT Header Parsion */
-  void parse_dos_header();
-  void parse_file_header(const uint32_t offset);
-  void parse_optional_header(const uint32_t offset);
+  uint32_t parse_dos_header();
+  uint32_t parse_file_header(const uint32_t offset);
+  uint32_t parse_optional_header(const uint32_t offset);
   void parse_sections(const uint32_t offset);
 
   void parse_exports();

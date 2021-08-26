@@ -11,19 +11,13 @@ std::unique_ptr<binary> pe_parser::parse(const uint8_t *buffer, const uint32_t s
 
   pe_parser parser{ buffer, size };
 
-  parser.parse_dos_header();
-
-  uint32_t offset = parser.m_binary->m_dos_header.lfanew();
-  parser.parse_file_header(offset);
-  offset += sizeof(parser.m_binary->m_signature);
-  offset += sizeof(raw_file_header);
-  parser.parse_optional_header(offset);
-  if (parser.m_binary->m_optional_header.magic() == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
-    offset += sizeof(raw_optional_header32);
-  } else if (parser.m_binary->m_optional_header.magic() == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-    offset += sizeof(raw_optional_header64);
-  }
+  uint32_t offset = parser.parse_dos_header();
+  offset += parser.parse_file_header(offset);
+  offset += parser.parse_optional_header(offset);
   parser.parse_sections(offset);
+
+  parser.parse_exports();
+  parser.parse_imports();
 
   return std::unique_ptr<pe_binary>{ parser.m_binary };
 }
@@ -35,30 +29,38 @@ pe_parser::pe_parser(const uint8_t *buffer, const uint32_t size)
   m_binary = new pe_binary();
 }
 
-void pe_parser::parse_dos_header()
+uint32_t pe_parser::parse_dos_header()
 {
   const raw_dos_header *dos_header_ = (const raw_dos_header *)m_buffer;
   m_binary->m_dos_header = pe_dos_header{ dos_header_ };
+  return m_binary->m_dos_header.lfanew();
 }
 
-void pe_parser::parse_file_header(const uint32_t offset)
+uint32_t pe_parser::parse_file_header(const uint32_t offset)
 {
   std::memcpy(&m_binary->m_signature, m_buffer + offset, sizeof(m_binary->m_signature));
   const raw_file_header *file_header_ = (const raw_file_header *)(m_buffer + offset + sizeof(m_binary->m_signature));
   m_binary->m_file_header = pe_file_header{ file_header_ };
+
+  uint32_t bytes_read = sizeof(m_binary->m_signature);
+  bytes_read += sizeof(raw_file_header);
+  return bytes_read;
 }
 
-void pe_parser::parse_optional_header(const uint32_t offset)
+uint32_t pe_parser::parse_optional_header(const uint32_t offset)
 {
   uint16_t optional_magic;
   std::memcpy(&optional_magic, m_buffer + m_binary->m_dos_header.lfanew() + 0x18, sizeof(optional_magic));
   if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
     const raw_optional_header32 *optional_header_ = (const raw_optional_header32 *)(m_buffer + offset);
     m_binary->m_optional_header = pe_optional_header{ optional_header_ };
+    return sizeof(raw_optional_header32);
   } else if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
     const raw_optional_header64 *optional_header_ = (const raw_optional_header64 *)(m_buffer + offset);
     m_binary->m_optional_header = pe_optional_header{ optional_header_ };
+    return sizeof(raw_optional_header64);
   }
+  return 0;
 }
 
 void pe_parser::parse_sections(const uint32_t offset)
@@ -74,10 +76,90 @@ void pe_parser::parse_sections(const uint32_t offset)
 
 void pe_parser::parse_exports()
 {
+  const data_directory export_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+  uint32_t offset = m_binary->rva_to_physical(export_directory.virtual_address);
+
+  raw_export_directory *export_directory_ = (raw_export_directory *)(m_buffer + offset);
+  uint32_t name_offset = m_binary->rva_to_physical(export_directory_->name_rva);
+
+  char *dir_name = (char *)(m_buffer + name_offset);
+
+  m_binary->m_export_directory = { export_directory_, std::string{ dir_name } };
+
+  uint32_t address_table_offset = m_binary->rva_to_physical(m_binary->m_export_directory.address_table_rva());
+  uint32_t name_table_offset = m_binary->rva_to_physical(m_binary->m_export_directory.name_pointer_rva());
+  uint32_t ordinal_table_offset = m_binary->rva_to_physical(m_binary->m_export_directory.ordinal_table_rva());
+
+  raw_export_address *address_table = (raw_export_address *)(m_buffer + address_table_offset);
+  uint32_t *name_pointer_table = (uint32_t *)(m_buffer + name_table_offset);
+  uint16_t *ordinal_table = (uint16_t *)(m_buffer + ordinal_table_offset);
+
+  for (uint32_t i = 0; i < m_binary->m_export_directory.number_of_names(); i++) {
+    uint16_t ordinal = ordinal_table[i];
+    uint32_t name_rva = name_pointer_table[i];
+
+    uint32_t name_offset = m_binary->rva_to_physical(name_rva);
+    char *name = (char *)(m_buffer + name_offset);
+
+    raw_export_address addr = address_table[i];
+    const data_directory export_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+    if (addr.forwarder_rva < export_directory.virtual_address
+        || addr.forwarder_rva >= export_directory.virtual_address + export_directory.size) {
+      name_offset = m_binary->rva_to_physical(addr.forwarder_rva);
+      char *forwarder_name = (char *)(m_buffer + name_offset);
+    }
+
+    m_binary->m_export_directory.add_export_entry(pe_export_entry{
+      std::string{ dir_name },
+      std::string{ name },
+      addr.export_rva + m_binary->m_base_addr,
+      addr,
+      std::string{},
+      name_rva,
+      ordinal });
+  }
 }
 
 void pe_parser::parse_imports()
 {
+  const data_directory import_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_IMPORT);
+  uint32_t offset = m_binary->rva_to_physical(import_directory.virtual_address);
+
+  while (true) {
+    raw_import_directory *import_directory_ = (raw_import_directory *)(m_buffer + offset);
+    if (!import_directory_->import_lookup_table_rva) break;
+
+    uint32_t name_offset = m_binary->rva_to_physical(import_directory_->name_rva);
+    char *dir_name = (char *)(m_buffer + name_offset);
+
+    pe_import_directory directory{ import_directory_, std::string{ dir_name } };
+
+    uint32_t lookup_table_offset = m_binary->rva_to_physical(directory.import_lookup_table_rva());
+    uint32_t address_table_offset = m_binary->rva_to_physical(directory.import_address_table_rva());
+
+
+    while (true) {
+      uint64_t name_rva = *((uint64_t *)(m_buffer + lookup_table_offset));
+      uint64_t address = *((uint64_t *)(m_buffer + address_table_offset));
+      if (!name_rva) break;
+      if (!(name_rva & 0x8000000000000000)) {
+        name_offset = m_binary->rva_to_physical((uint32_t)(name_rva));
+        raw_hint_name *hint_name_ = (raw_hint_name *)(m_buffer + name_offset);
+        directory.add_import_entry(pe_import_entry{
+          std::string{ dir_name },
+          hint_name_,
+          address,
+          name_rva,
+          0 });
+      }
+
+      lookup_table_offset += sizeof(uint64_t);
+      address_table_offset += sizeof(uint64_t);
+    }
+
+    m_binary->m_import_directories.emplace_back(directory);
+    offset += sizeof(raw_import_directory);
+  }
 }
 
 void pe_parser::parse_resources()
