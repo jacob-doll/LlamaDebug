@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <vector>
 
-namespace llama_debug {
+#include "llama_debug/binary/pe/pe_resource_directory_entry.h"
 
-class pe_resource_directory_entry;
+namespace llama_debug {
 
 struct raw_resource_directory
 {

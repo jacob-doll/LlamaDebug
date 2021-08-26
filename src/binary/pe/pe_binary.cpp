@@ -41,40 +41,6 @@ uint32_t pe_binary::rva_to_physical(uint32_t rva)
   return rva;
 }
 
-// bool pe_binary::from_buffer(const uint8_t *buffer, uint32_t size)
-// {
-
-
-//   const data_directory resource_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
-//   offset = rva_to_physical(resource_directory.virtual_address);
-//   parse_resources(buffer, offset);
-
-//   return true;
-// }
-
-// void pe_binary::parse_resources(const uint8_t *buffer, const uint32_t offset)
-// {
-//   const data_directory resource_directory = m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
-//   const uint32_t resource_dir_ptr = rva_to_physical(resource_directory.virtual_address);
-
-//   raw_resource_directory *root_ = (raw_resource_directory *)(buffer + offset);
-//   m_resource_root = pe_resource_directory{ root_ };
-
-//   uint16_t num_of_entries = m_resource_root.number_of_id_entries() + m_resource_root.number_of_named_entries();
-//   uint32_t index = offset + sizeof(raw_resource_directory);
-//   for (uint16_t i = 0; i < num_of_entries; i++) {
-//     raw_resource_directory_entry *entry_ = (raw_resource_directory_entry *)(buffer + index);
-//     pe_resource_directory_entry entry{ entry_ };
-//     // if (entry.is_directory_offset()) {
-//     //   uint32_t dir_offset = entry.offset_to_directory() & 0x7FFFFFFF;
-//     //   this->parse_resources(buffer, resource_dir_ptr + dir_offset);
-//     // }
-
-//     m_resource_root.add_entry(pe_resource_directory_entry{ entry_ });
-//     index += sizeof(raw_resource_directory_entry);
-//   }
-// }
-
 std::ostream &pe_binary::print(std::ostream &os) const
 {
   std::ios::fmtflags old_settings = os.flags();
@@ -129,16 +95,16 @@ std::ostream &pe_binary::print(std::ostream &os) const
     }
   }
 
-  // os << std::setfill('-') << std::setw(96) << "\n";
-  // os << "RESOURCES\n";
+  os << std::setfill('-') << std::setw(96) << "\n";
+  os << "RESOURCES\n";
 
-  // // for (auto resource_dir : m_resource_directories) {
-  // os << std::setfill('-') << std::setw(96) << "\n";
-  // for (auto resource_entry : m_resource_root.entries()) {
-  //   os << std::hex << resource_entry.id() << "\n";
-  //   os << std::hex << resource_entry.offset_to_directory() << "\n";
+  // for (auto resource_dir : m_resource_directories) {
+  os << std::setfill('-') << std::setw(96) << "\n";
+  for (auto resource_entry : m_resource_root.entries()) {
+    os << std::hex << resource_entry.id() << "\n";
+    os << std::hex << resource_entry.offset_to_directory() << "\n";
+  }
   // }
-  // // }
 
   os.flags(old_settings);
   return os;

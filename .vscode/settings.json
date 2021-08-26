@@ -79,5 +79,7 @@
         "xlocmon": "cpp",
         "xloctime": "cpp"
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.smoothScrolling": true,
+    "editor.minimap.enabled": false
 }

@@ -11,7 +11,7 @@
 #include "llama_debug/binary/pe/pe_section_header.h"
 #include "llama_debug/binary/pe/pe_export_directory.h"
 #include "llama_debug/binary/pe/pe_import_directory.h"
-// #include "llama_debug/binary/pe/pe_resource_directory.h"
+#include "llama_debug/binary/pe/pe_resource_directory.h"
 
 namespace llama_debug {
 class pe_parser;
@@ -39,7 +39,7 @@ private:
 
   pe_export_directory m_export_directory;
   import_directories_t m_import_directories;
-  // pe_resource_directory m_resource_root;
+  pe_resource_directory m_resource_root;
 };
 
 }// namespace llama_debug
