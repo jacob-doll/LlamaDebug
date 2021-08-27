@@ -24,11 +24,19 @@ public:
   using import_directories_t = std::vector<pe_import_directory>;
 
   static bool validate(const uint8_t *buffer, const uint32_t size);
+  uint32_t rva_to_physical(uint32_t rva);
 
-  virtual sections_t &sections() override;
   virtual std::ostream &print(std::ostream &os) const override;
 
-  uint32_t rva_to_physical(uint32_t rva);
+  pe_dos_header &dos_header();
+  uint32_t signature();
+  pe_file_header &file_header();
+  pe_optional_header &optional_header();
+  virtual sections_t &sections() override;
+
+  pe_export_directory &export_directory();
+  import_directories_t &import_directories();
+  pe_resource_directory &resource_root();
 
 private:
   pe_dos_header m_dos_header;

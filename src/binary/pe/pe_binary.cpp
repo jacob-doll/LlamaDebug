@@ -24,11 +24,6 @@ bool pe_binary::validate(const uint8_t *buffer, const uint32_t size)
   return false;
 }
 
-sections_t &pe_binary::sections()
-{
-  return m_sections;
-}
-
 uint32_t pe_binary::rva_to_physical(uint32_t rva)
 {
   for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
@@ -101,6 +96,46 @@ std::ostream &pe_binary::print(std::ostream &os) const
 
   os.flags(old_settings);
   return os;
+}
+
+pe_dos_header &pe_binary::dos_header()
+{
+  return m_dos_header;
+}
+
+uint32_t pe_binary::signature()
+{
+  return m_signature;
+}
+
+pe_file_header &pe_binary::file_header()
+{
+  return m_file_header;
+}
+
+pe_optional_header &pe_binary::optional_header()
+{
+  return m_optional_header;
+}
+
+sections_t &pe_binary::sections()
+{
+  return m_sections;
+}
+
+pe_export_directory &pe_binary::export_directory()
+{
+  return m_export_directory;
+}
+
+std::vector<pe_import_directory> &pe_binary::import_directories()
+{
+  return m_import_directories;
+}
+
+pe_resource_directory &pe_binary::resource_root()
+{
+  return *m_resource_root;
 }
 
 }// namespace llama_debug
