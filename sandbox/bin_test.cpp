@@ -15,6 +15,8 @@ int main()
     return 1;
   }
 
+  std::cout << std::hex << bin->base_addr() << "\n";
+
   std::cout << "Printing sections!\n";
   for (auto section : bin->sections()) {
     std::cout << *section << "\n";
@@ -22,7 +24,7 @@ int main()
 
   std::cout << "Printing symbols!\n";
   for (auto symbol : bin->symbols()) {
-    std::cout << symbol->name() << "\n";
+    std::cout << *symbol << "\n";
   }
 
   return 0;

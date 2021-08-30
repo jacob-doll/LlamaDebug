@@ -56,10 +56,14 @@ uint32_t pe_parser::parse_optional_header(const uint32_t offset)
   if (optional_magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
     const raw_optional_header32 *optional_header_ = (const raw_optional_header32 *)(m_buffer + offset);
     m_binary->m_optional_header = pe_optional_header{ optional_header_ };
+    m_binary->m_base_addr = m_binary->m_optional_header.image_base();
+    m_binary->m_entry_point = m_binary->m_optional_header.address_of_entry_point();
     return sizeof(raw_optional_header32);
   } else if (optional_magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
     const raw_optional_header64 *optional_header_ = (const raw_optional_header64 *)(m_buffer + offset);
     m_binary->m_optional_header = pe_optional_header{ optional_header_ };
+    m_binary->m_base_addr = m_binary->m_optional_header.image_base();
+    m_binary->m_entry_point = m_binary->m_optional_header.address_of_entry_point();
     return sizeof(raw_optional_header64);
   }
   return 0;

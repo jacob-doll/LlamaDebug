@@ -4,6 +4,7 @@ set(SRCS
     binary/mmap_file.cpp
     binary/parser.cpp
     binary/section.cpp
+    binary/symbol.cpp
     binary/pe/defs.cpp
     binary/pe/pe_binary.cpp
     binary/pe/pe_dos_header.cpp

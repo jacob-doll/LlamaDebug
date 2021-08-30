@@ -41,6 +41,8 @@ public:
   void name_rva(const uint32_t name_rva);
   void ordinal(const uint16_t ordinal);
 
+  virtual std::ostream &print(std::ostream &os) const override;
+
 private:
   std::string m_lib;
   std::string m_name;

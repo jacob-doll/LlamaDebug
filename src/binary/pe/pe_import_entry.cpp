@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "llama_debug/binary/pe/pe_import_entry.h"
 
 namespace llama_debug {
@@ -84,5 +86,15 @@ void pe_import_entry::address_rva(const uint64_t address_rva)
   m_address_rva = address_rva;
 }
 
+std::ostream &pe_import_entry::print(std::ostream &os) const
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << "(IMPORT)" << m_name << "@" << m_lib << ":" << m_address;
+
+  os.flags(old_settings);
+  return os;
+}
 
 }// namespace llama_debug

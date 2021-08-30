@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "llama_debug/binary/pe/pe_export_entry.h"
 
 namespace llama_debug {
@@ -110,5 +112,15 @@ void pe_export_entry::ordinal(const uint16_t ordinal)
   m_ordinal = ordinal;
 }
 
+std::ostream &pe_export_entry::print(std::ostream &os) const
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << "(EXPORT)" << m_name << "@" << m_lib << ":" << m_address;
+
+  os.flags(old_settings);
+  return os;
+}
 
 }// namespace llama_debug

@@ -36,6 +36,8 @@ public:
   void name_rva(const uint64_t name_rva);
   void address_rva(const uint64_t address_rva);
 
+  virtual std::ostream &print(std::ostream &os) const override;
+
 private:
   std::string m_lib;
   std::string m_name;
