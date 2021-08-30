@@ -65,7 +65,7 @@ std::string &pe_import_directory::name()
   return m_name;
 }
 
-std::vector<pe_import_entry> &pe_import_directory::import_entries()
+import_entries_t &pe_import_directory::import_entries()
 {
   return m_import_entries;
 }
@@ -100,12 +100,12 @@ void pe_import_directory::name(const std::string &name)
   m_name = name;
 }
 
-void pe_import_directory::import_entries(const std::vector<pe_import_entry> &import_entries)
+void pe_import_directory::import_entries(const import_entries_t &import_entries)
 {
   m_import_entries = import_entries;
 }
 
-void pe_import_directory::add_import_entry(const pe_import_entry &entry)
+void pe_import_directory::add_import_entry(import_entry_ptr entry)
 {
   m_import_entries.emplace_back(entry);
 }

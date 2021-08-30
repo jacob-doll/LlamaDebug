@@ -113,7 +113,7 @@ std::string pe_export_directory::name() const
   return m_name;
 }
 
-std::vector<pe_export_entry> pe_export_directory::export_entries() const
+export_entries_t pe_export_directory::export_entries() const
 {
   return m_export_entries;
 }
@@ -178,12 +178,12 @@ void pe_export_directory::name(const std::string &name)
   m_name = name;
 }
 
-void pe_export_directory::export_entries(const std::vector<pe_export_entry> &export_entries)
+void pe_export_directory::export_entries(const export_entries_t &export_entries)
 {
   m_export_entries = export_entries;
 }
 
-void pe_export_directory::add_export_entry(const pe_export_entry &entry)
+void pe_export_directory::add_export_entry(export_entry_ptr entry)
 {
   m_export_entries.emplace_back(entry);
 }

@@ -29,7 +29,6 @@ public:
   static bool validate(const uint8_t *buffer, const uint32_t size);
   uint32_t rva_to_physical(uint32_t rva);
 
-  virtual symbols_t symbols() override;
   virtual std::ostream &print(std::ostream &os) const override;
 
   pe_dos_header &dos_header();

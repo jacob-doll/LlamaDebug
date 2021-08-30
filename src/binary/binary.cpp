@@ -30,6 +30,11 @@ sections_t &binary::sections()
   return m_sections;
 }
 
+symbols_t &binary::symbols()
+{
+  return m_symbols;
+}
+
 std::ostream &binary::print(std::ostream &os) const
 {
   return os;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 
+#include "llama_debug/binary/pe/types.h"
 #include "llama_debug/binary/pe/pe_export_entry.h"
 
 namespace llama_debug {
@@ -27,8 +28,6 @@ struct raw_export_directory
 class pe_export_directory
 {
 public:
-  using export_entries_t = std::vector<pe_export_entry>;
-
   pe_export_directory();
   pe_export_directory(const raw_export_directory *data,
     const std::string &name);
@@ -64,7 +63,7 @@ public:
   void name(const std::string &name);
   void export_entries(const export_entries_t &export_entries);
 
-  void add_export_entry(const pe_export_entry &entry);
+  void add_export_entry(export_entry_ptr entry);
 
 private:
   uint32_t m_characteristics;

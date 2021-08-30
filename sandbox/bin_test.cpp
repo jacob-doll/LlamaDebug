@@ -15,13 +15,15 @@ int main()
     return 1;
   }
 
-  // std::cout << *bin << "\n";
+  std::cout << "Printing sections!\n";
+  for (auto section : bin->sections()) {
+    std::cout << *section << "\n";
+  }
 
   std::cout << "Printing symbols!\n";
-  auto &symbols = bin->symbols();
-  // for (auto &symbol : bin->symbols()) {
-  //   std::cout << symbol->name() << "\n";
-  // }
+  for (auto symbol : bin->symbols()) {
+    std::cout << symbol->name() << "\n";
+  }
 
   return 0;
 }

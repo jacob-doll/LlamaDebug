@@ -42,24 +42,6 @@ uint32_t pe_binary::rva_to_physical(uint32_t rva)
   return rva;
 }
 
-symbols_t pe_binary::symbols()
-{
-  symbols_t ret;
-
-  for (auto &export_entry : m_export_directory.export_entries()) {
-    // printf("%s\n", export_entry.name().c_str());
-    ret.emplace_back(std::unique_ptr<symbol>(&export_entry));
-  }
-
-  // for (auto &import_directory : m_import_directories) {
-  //   for (auto &import_entry : import_directory.import_entries()) {
-  //     ret.emplace_back(&import_entry);
-  //   }
-  // }
-  printf("returning!\n");
-  return ret;
-}
-
 std::ostream &pe_binary::print(std::ostream &os) const
 {
   std::ios::fmtflags old_settings = os.flags();
@@ -101,7 +83,7 @@ std::ostream &pe_binary::print(std::ostream &os) const
   os << std::setfill('-') << std::setw(96) << "\n";
   os << m_export_directory.name() << "\n";
   for (auto export_entry : m_export_directory.export_entries()) {
-    os << export_entry.name() << " | " << export_entry.address() << " | " << export_entry.forwarder_name() << "\n";
+    os << export_entry->name() << " | " << export_entry->address() << " | " << export_entry->forwarder_name() << "\n";
   }
 
   os << std::setfill('-') << std::setw(96) << "\n";
@@ -110,7 +92,7 @@ std::ostream &pe_binary::print(std::ostream &os) const
     os << std::setfill('-') << std::setw(96) << "\n";
     os << import_dir.name() << "\n";
     for (auto import_entry : import_dir.import_entries()) {
-      os << import_entry.name() << "\n";
+      os << import_entry->name() << "\n";
     }
   }
 

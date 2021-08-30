@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "llama_debug/binary/pe/pe_import_entry.h"
+#include "llama_debug/binary/pe/types.h"
 
 namespace llama_debug {
 
@@ -20,8 +21,6 @@ struct raw_import_directory
 class pe_import_directory
 {
 public:
-  using import_entries_t = std::vector<pe_import_entry>;
-
   pe_import_directory();
   pe_import_directory(const raw_import_directory *data,
     const std::string &name);
@@ -45,7 +44,7 @@ public:
   void name(const std::string &name);
   void import_entries(const import_entries_t &import_entries);
 
-  void add_import_entry(const pe_import_entry &entry);
+  void add_import_entry(import_entry_ptr entry);
 
 private:
   uint32_t m_import_lookup_table_rva;

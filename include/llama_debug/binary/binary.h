@@ -20,8 +20,7 @@ public:
   uintptr_t base_addr();
   uintptr_t entry_point();
   sections_t &sections();
-
-  virtual symbols_t symbols() = 0;
+  symbols_t &symbols();
 
   virtual std::ostream &print(std::ostream &os) const;
   friend std::ostream &operator<<(std::ostream &os, const binary &binary);
@@ -31,6 +30,7 @@ protected:
   uintptr_t m_base_addr;
   uintptr_t m_entry_point;
   sections_t m_sections;
+  symbols_t m_symbols;
 };
 
 };// namespace llama_debug
