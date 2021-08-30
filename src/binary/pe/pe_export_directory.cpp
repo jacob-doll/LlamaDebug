@@ -1,3 +1,6 @@
+#include <iomanip>
+#include <ctime>
+
 #include "llama_debug/binary/pe/pe_export_directory.h"
 
 namespace llama_debug {
@@ -186,6 +189,38 @@ void pe_export_directory::export_entries(const export_entries_t &export_entries)
 void pe_export_directory::add_export_entry(export_entry_ptr entry)
 {
   m_export_entries.emplace_back(entry);
+}
+
+std::ostream &operator<<(std::ostream &os, const pe_export_directory &export_directory)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << std::left << std::setw(48) << std::setfill(' ') << export_directory.m_name << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Characteristics: " << export_directory.m_characteristics << "\n";
+  std::time_t time_date_stamp_ = export_directory.m_time_date_stamp;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Time Date Stamp: " << std::ctime(&time_date_stamp_);
+  os << std::left << std::setw(48) << std::setfill(' ') << "Major Version: " << export_directory.m_major_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Minor Version: " << export_directory.m_minor_version << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Name RVA: " << export_directory.m_name_rva << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Ordinal Base: " << export_directory.m_ordinal_base << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Number of Functions: " << export_directory.m_number_of_functions << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Number of Names: " << export_directory.m_number_of_names << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Address Table RVA: " << export_directory.m_address_table_rva << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Name Pointer Table RVA: " << export_directory.m_name_pointer_rva << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Ordinal Table RVA: " << export_directory.m_ordinal_table_rva << "\n";
+
+  auto it = export_directory.m_export_entries.begin();
+  auto end = export_directory.m_export_entries.end();
+  for (; it != end; ++it) {
+    os << *(*it);
+    if (it != --export_directory.m_export_entries.end()) {
+      os << "\n";
+    }
+  }
+
+  os.flags(old_settings);
+  return os;
 }
 
 }// namespace llama_debug

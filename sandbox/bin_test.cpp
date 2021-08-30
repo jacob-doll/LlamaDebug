@@ -15,17 +15,19 @@ int main()
     return 1;
   }
 
-  std::cout << std::hex << bin->base_addr() << "\n";
+  std::cout << *bin << "\n";
 
-  std::cout << "Printing sections!\n";
-  for (auto section : bin->sections()) {
-    std::cout << *section << "\n";
-  }
+  // std::cout << std::hex << bin->base_addr() << "\n";
 
-  std::cout << "Printing symbols!\n";
-  for (auto symbol : bin->symbols()) {
-    std::cout << *symbol << "\n";
-  }
+  // std::cout << "Printing sections!\n";
+  // for (auto section : bin->sections()) {
+  //   std::cout << *section << "\n";
+  // }
+
+  // std::cout << "Printing symbols!\n";
+  // for (auto symbol : bin->symbols()) {
+  //   std::cout << *symbol << "\n";
+  // }
 
   return 0;
 }

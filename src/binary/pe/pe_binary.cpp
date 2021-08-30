@@ -80,20 +80,13 @@ std::ostream &pe_binary::print(std::ostream &os) const
 
   os << std::setfill('-') << std::setw(96) << "\n";
   os << "EXPORTS\n";
-  os << std::setfill('-') << std::setw(96) << "\n";
-  os << m_export_directory.name() << "\n";
-  for (auto export_entry : m_export_directory.export_entries()) {
-    os << export_entry->name() << " | " << export_entry->address() << " | " << export_entry->forwarder_name() << "\n";
-  }
+  os << m_export_directory << "\n";
 
   os << std::setfill('-') << std::setw(96) << "\n";
   os << "IMPORTS\n";
   for (auto import_dir : m_import_directories) {
     os << std::setfill('-') << std::setw(96) << "\n";
-    os << import_dir.name() << "\n";
-    for (auto import_entry : import_dir.import_entries()) {
-      os << import_entry->name() << "\n";
-    }
+    os << import_dir << "\n";
   }
 
   os << std::setfill('-') << std::setw(96) << "\n";

@@ -1,3 +1,6 @@
+#include <iomanip>
+#include <ctime>
+
 #include "llama_debug/binary/pe/pe_import_directory.h"
 
 namespace llama_debug {
@@ -108,6 +111,31 @@ void pe_import_directory::import_entries(const import_entries_t &import_entries)
 void pe_import_directory::add_import_entry(import_entry_ptr entry)
 {
   m_import_entries.emplace_back(entry);
+}
+
+std::ostream &operator<<(std::ostream &os, const pe_import_directory &import_directory)
+{
+  std::ios::fmtflags old_settings = os.flags();
+
+  os << std::hex;
+  os << std::left << std::setw(48) << std::setfill(' ') << import_directory.m_name << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Import Lookup Table RVA: " << import_directory.m_import_lookup_table_rva << "\n";
+  std::time_t time_date_stamp_ = import_directory.m_time_date_stamp;
+  os << std::left << std::setw(48) << std::setfill(' ') << "Time Date Stamp: " << std::ctime(&time_date_stamp_);
+  os << std::left << std::setw(48) << std::setfill(' ') << "Forwarder Chain: " << import_directory.m_forwarder_chain << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Name RVA: " << import_directory.m_name_rva << "\n";
+  os << std::left << std::setw(48) << std::setfill(' ') << "Import Address Table RVA: " << import_directory.m_import_address_table_rva << "\n";
+  auto it = import_directory.m_import_entries.begin();
+  auto end = import_directory.m_import_entries.end();
+  for (; it != end; ++it) {
+    os << *(*it);
+    if (it != --import_directory.m_import_entries.end()) {
+      os << "\n";
+    }
+  }
+
+  os.flags(old_settings);
+  return os;
 }
 
 }// namespace llama_debug

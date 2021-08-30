@@ -65,6 +65,8 @@ public:
 
   void add_export_entry(export_entry_ptr entry);
 
+  friend std::ostream &operator<<(std::ostream &os, const pe_export_directory &export_directory);
+
 private:
   uint32_t m_characteristics;
   uint32_t m_time_date_stamp;

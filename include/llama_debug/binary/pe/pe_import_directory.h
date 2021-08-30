@@ -46,6 +46,8 @@ public:
 
   void add_import_entry(import_entry_ptr entry);
 
+  friend std::ostream &operator<<(std::ostream &os, const pe_import_directory &import_directory);
+
 private:
   uint32_t m_import_lookup_table_rva;
   uint32_t m_time_date_stamp;
