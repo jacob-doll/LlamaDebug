@@ -4,6 +4,32 @@
 
 namespace llama_debug {
 
+binary::binary() = default;
+
+binary::binary(const std::string &name)
+  : m_name{ name }
+{}
+
+std::string &binary::name()
+{
+  return m_name;
+}
+
+uintptr_t binary::base_addr()
+{
+  return m_base_addr;
+}
+
+uintptr_t binary::entry_point()
+{
+  return m_entry_point;
+}
+
+sections_t &binary::sections()
+{
+  return m_sections;
+}
+
 std::ostream &binary::print(std::ostream &os) const
 {
   return os;

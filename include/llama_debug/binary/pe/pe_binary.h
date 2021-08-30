@@ -23,16 +23,19 @@ class pe_binary : public binary
 public:
   using import_directories_t = std::vector<pe_import_directory>;
 
+  pe_binary();
+  pe_binary(const std::string &name);
+
   static bool validate(const uint8_t *buffer, const uint32_t size);
   uint32_t rva_to_physical(uint32_t rva);
 
+  virtual symbols_t symbols() override;
   virtual std::ostream &print(std::ostream &os) const override;
 
   pe_dos_header &dos_header();
   uint32_t signature();
   pe_file_header &file_header();
   pe_optional_header &optional_header();
-  virtual sections_t &sections() override;
 
   pe_export_directory &export_directory();
   import_directories_t &import_directories();
@@ -43,7 +46,6 @@ private:
   uint32_t m_signature;
   pe_file_header m_file_header;
   pe_optional_header m_optional_header;
-  sections_t m_sections;
 
   pe_export_directory m_export_directory;
   import_directories_t m_import_directories;

@@ -13,17 +13,24 @@ namespace llama_debug {
 class binary
 {
 public:
-  uintptr_t base_addr() { return m_base_addr; }
-  uintptr_t entry_point() { return m_entry_point; }
-  // maybe main func loc?
-  virtual sections_t &sections() = 0;
+  binary();
+  binary(const std::string &name);
+
+  std::string &name();
+  uintptr_t base_addr();
+  uintptr_t entry_point();
+  sections_t &sections();
+
+  virtual symbols_t symbols() = 0;
 
   virtual std::ostream &print(std::ostream &os) const;
   friend std::ostream &operator<<(std::ostream &os, const binary &binary);
 
 protected:
+  std::string m_name;
   uintptr_t m_base_addr;
   uintptr_t m_entry_point;
+  sections_t m_sections;
 };
 
 };// namespace llama_debug

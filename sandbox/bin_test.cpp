@@ -10,9 +10,18 @@ int main()
 
   auto &bin = parse("C:\\Windows\\System32\\msvcrt.dll");
 
-  if (bin) {
-    std::cout << *bin << "\n";
+  if (!bin) {
+    std::cout << "Error loading binary!\n";
+    return 1;
   }
+
+  // std::cout << *bin << "\n";
+
+  std::cout << "Printing symbols!\n";
+  auto &symbols = bin->symbols();
+  // for (auto &symbol : bin->symbols()) {
+  //   std::cout << symbol->name() << "\n";
+  // }
 
   return 0;
 }

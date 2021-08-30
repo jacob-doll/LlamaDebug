@@ -5,6 +5,12 @@
 
 namespace llama_debug {
 
+pe_binary::pe_binary() = default;
+
+pe_binary::pe_binary(const std::string &name)
+  : binary{ name }
+{}
+
 bool pe_binary::validate(const uint8_t *buffer, const uint32_t size)
 {
   // Must have the default MS-Dos header
@@ -34,6 +40,24 @@ uint32_t pe_binary::rva_to_physical(uint32_t rva)
     }
   }
   return rva;
+}
+
+symbols_t pe_binary::symbols()
+{
+  symbols_t ret;
+
+  for (auto &export_entry : m_export_directory.export_entries()) {
+    // printf("%s\n", export_entry.name().c_str());
+    ret.emplace_back(std::unique_ptr<symbol>(&export_entry));
+  }
+
+  // for (auto &import_directory : m_import_directories) {
+  //   for (auto &import_entry : import_directory.import_entries()) {
+  //     ret.emplace_back(&import_entry);
+  //   }
+  // }
+  printf("returning!\n");
+  return ret;
 }
 
 std::ostream &pe_binary::print(std::ostream &os) const
@@ -116,11 +140,6 @@ pe_file_header &pe_binary::file_header()
 pe_optional_header &pe_binary::optional_header()
 {
   return m_optional_header;
-}
-
-sections_t &pe_binary::sections()
-{
-  return m_sections;
 }
 
 pe_export_directory &pe_binary::export_directory()
