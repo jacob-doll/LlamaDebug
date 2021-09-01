@@ -1,5 +1,5 @@
 
-set(SRCS
+set(BIN_SRCS
     binary/binary.cpp
     binary/mmap_file.cpp
     binary/parser.cpp
@@ -21,12 +21,29 @@ set(SRCS
     binary/pe/pe_section_header.cpp
 )
 
+set(PROC_SRCS
+    process/pipe.cpp
+    process/process.cpp
+)
+
+
+
 if (WIN32)
-    set(SRCS
-        ${SRCS}
+    set(DBG_SRCS
         debugger_win.cpp
     )
 
-    pybind11_add_module(${PROJECT_NAME} ${SRCS} py_bindings.cpp)
-    add_library(${PROJECT_NAME}_lib ${SRCS})
+    set(PROC_SRCS
+        ${PROC_SRCS}
+        process/platform/windows/win_pipe.cpp
+    )
 endif() # WIN32
+
+set(SRCS
+    ${DBG_SRCS}
+    ${BIN_SRCS}
+    ${PROC_SRCS}
+)
+    
+pybind11_add_module(${PROJECT_NAME} ${SRCS} py_bindings.cpp)
+add_library(${PROJECT_NAME}_lib ${SRCS})
