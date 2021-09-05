@@ -1,5 +1,4 @@
 #include "llama_debug/process/pipe.h"
-
 #include "llama_debug/process/platform/windows/win_pipe.h"
 
 namespace llama_debug {

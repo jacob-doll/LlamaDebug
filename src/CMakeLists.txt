@@ -36,6 +36,7 @@ if (WIN32)
     set(PROC_SRCS
         ${PROC_SRCS}
         process/platform/windows/win_pipe.cpp
+        process/platform/windows/win_process.cpp
     )
 endif() # WIN32
 

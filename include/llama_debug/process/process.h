@@ -13,8 +13,12 @@ public:
     const std::string &name,
     const std::string &args);
 
-private:
-  process();
+protected:
+  process(const std::string &name, const std::string &args);
+
+protected:
+  std::string m_name;
+  std::string m_args;
 };
 
 }// namespace llama_debug
