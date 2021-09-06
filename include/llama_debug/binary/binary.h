@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <ostream>
 
-#include "llama_debug/types.h"
+#include "llama_debug/binary/types.h"
 #include "llama_debug/binary/section.h"
 #include "llama_debug/binary/symbol.h"
 

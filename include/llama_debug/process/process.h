@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "llama_debug/process/types.h"
+
 namespace llama_debug {
 
 class process
@@ -13,12 +15,16 @@ public:
     const std::string &name,
     const std::string &args);
 
+  virtual void close() = 0;
+  virtual bool is_active() = 0;
+
 protected:
   process(const std::string &name, const std::string &args);
 
 protected:
   std::string m_name;
   std::string m_args;
+  ldpid_t m_pid;
 };
 
 }// namespace llama_debug

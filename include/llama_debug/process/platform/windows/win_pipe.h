@@ -7,9 +7,9 @@ namespace llama_debug {
 
 class win_pipe : public pipe
 {
+public:
   typedef void *HANDLE;
 
-public:
   win_pipe();
 
   HANDLE read_handle();

@@ -1,5 +1,5 @@
-#ifndef LLAMADEBUG_TYPES_H
-#define LLAMADEBUG_TYPES_H
+#ifndef LLAMADEBUG_BINARY_TYPES_H
+#define LLAMADEBUG_BINARY_TYPES_H
 
 #include <memory>
 #include <vector>
@@ -15,4 +15,4 @@ using symbols_t = std::vector<std::shared_ptr<symbol>>;
 }// namespace llama_debug
 
 
-#endif// LLAMADEBUG_TYPES_H
+#endif// LLAMADEBUG_BINARY_TYPES_H
