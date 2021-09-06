@@ -7,11 +7,11 @@ int main()
 {
   std::cout << "Creating Process!\n";
   try {
-    auto proc = llama_debug::process::create_process("powershell.exe", "");
-    while (proc->is_active())
-      ;
+    auto proc = llama_debug::process::create_process("cmd.exe", "");
+    std::cout << (char *)proc->std_out().read().data();
+    std::cout << (char *)proc->std_out().read().data();
+    std::cout << (char *)proc->std_out().read().data();
 
-    std::cout << "Process Exited!\n";
     proc->close();
   } catch (std::exception &e) {
     std::cout << e.what() << "\n";

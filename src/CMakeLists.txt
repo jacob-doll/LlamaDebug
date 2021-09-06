@@ -37,6 +37,7 @@ if (WIN32)
         ${PROC_SRCS}
         process/platform/windows/win_pipe.cpp
         process/platform/windows/win_process.cpp
+        process/platform/windows/win_exception.cpp
     )
 endif() # WIN32
 

@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "llama_debug/process/platform/windows/win_pipe.h"
+#include "llama_debug/process/platform/windows/win_exception.h"
 
 namespace llama_debug {
 
@@ -46,12 +47,8 @@ const std::vector<uint8_t> win_pipe::read()
   BOOL bSuccess = FALSE;
   uint32_t capacity = 4096;
 
-  for (;;) {
-    bSuccess = ReadFile(m_read_handle, &ret[0], ret.size(), &dwRead, nullptr);
-    if (!bSuccess || dwRead == 0) break;
-    capacity += 4096;
-    ret.resize(capacity);
-  }
+  bSuccess = ReadFile(m_read_handle, &ret[0], ret.size(), &dwRead, nullptr);
+
   return ret;
 }
 
@@ -78,7 +75,7 @@ void win_pipe::create_pipe()
   saAttr.lpSecurityDescriptor = NULL;
 
   if (!CreatePipe(&m_read_handle, &m_write_handle, &saAttr, 0)) {
-    return;
+    throw win_exception(GetLastError());
   }
 }
 

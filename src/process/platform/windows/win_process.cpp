@@ -1,32 +1,10 @@
 #include <windows.h>
-#include <exception>
 
 #include "llama_debug/process/platform/windows/win_process.h"
+#include "llama_debug/process/platform/windows/win_pipe.h"
+#include "llama_debug/process/platform/windows/win_exception.h"
 
 namespace llama_debug {
-
-class win_exception : public std::exception
-{
-public:
-  win_exception(DWORD error)
-  {
-    FormatMessage(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      NULL,
-      error,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      (LPTSTR)&msg,
-      0,
-      NULL);
-  }
-
-private:
-  virtual const char *what() const throw()
-  {
-    return msg;
-  }
-  char *msg;
-};
 
 win_process::win_process(const std::string &name, const std::string &args) : process(name, args)
 {
@@ -40,19 +18,29 @@ void win_process::init_process()
   command_str += m_args;
   LPSTR command_line = const_cast<char *>(command_str.c_str());
 
-  STARTUPINFO si;
+  win_pipe *std_out_ = dynamic_cast<win_pipe *>(m_std_out.get());
+  std_out_->disable_read();
+  win_pipe *std_in_ = dynamic_cast<win_pipe *>(m_std_in.get());
+  std_in_->disable_write();
+
   PROCESS_INFORMATION pi;
+  STARTUPINFO si;
+
+  ZeroMemory(&pi, sizeof(pi));
 
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
-  ZeroMemory(&pi, sizeof(pi));
+  si.hStdError = std_out_->write_handle();
+  si.hStdOutput = std_out_->write_handle();
+  si.hStdInput = std_in_->read_handle();
+  si.dwFlags |= STARTF_USESTDHANDLES;
 
   if (!CreateProcess(
         nullptr,
         command_line,
         nullptr,
         nullptr,
-        FALSE,
+        TRUE,
         0,
         nullptr,
         nullptr,
@@ -60,6 +48,9 @@ void win_process::init_process()
         &pi)) {
     throw win_exception(GetLastError());
   }
+
+  std_out_->close_write_handle();
+  std_in_->close_read_handle();
 
   m_proc_handle = pi.hProcess;
   m_thread_handle = pi.hThread;
@@ -69,6 +60,9 @@ void win_process::init_process()
 
 void win_process::close()
 {
+  if (!this->is_active()) {
+    TerminateProcess(m_proc_handle, 9);
+  }
   CloseHandle(m_proc_handle);
   CloseHandle(m_thread_handle);
 }

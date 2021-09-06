@@ -6,7 +6,21 @@ namespace llama_debug {
 process::process(const std::string &name, const std::string &args)
   : m_name{ name },
     m_args{ args }
-{}
+{
+  m_std_out = pipe::create_pipe();
+  m_std_in = pipe::create_pipe();
+}
+
+pipe &process::std_out()
+{
+  return *m_std_out;
+}
+
+pipe &process::std_in()
+{
+  return *m_std_in;
+}
+
 
 std::unique_ptr<process> process::create_process(const std::string &name, const std::string &args)
 {
