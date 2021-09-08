@@ -61,10 +61,15 @@ void win_process::init_process()
 void win_process::close()
 {
   if (!this->is_active()) {
-    TerminateProcess(m_proc_handle, 9);
+    this->kill(9);
   }
   CloseHandle(m_proc_handle);
   CloseHandle(m_thread_handle);
+}
+
+void win_process::kill(uint32_t exit_code)
+{
+  TerminateProcess(m_proc_handle, exit_code);
 }
 
 bool win_process::is_active()

@@ -13,6 +13,7 @@ public:
   win_process(const std::string &name, const std::string &args);
 
   virtual void close() override;
+  virtual void kill(uint32_t exit_code) override;
   virtual bool is_active() override;
 
 private:

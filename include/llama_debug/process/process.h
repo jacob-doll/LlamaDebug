@@ -18,6 +18,7 @@ public:
     const std::string &args);
 
   virtual void close() = 0;
+  virtual void kill(uint32_t exit_code) = 0;
   virtual bool is_active() = 0;
 
   pipe &std_out();
