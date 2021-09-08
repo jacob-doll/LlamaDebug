@@ -15,6 +15,7 @@ public:
   virtual void close() override;
   virtual void kill(uint32_t exit_code) override;
   virtual bool is_active() override;
+  virtual mapped_regions_t mapped_regions() override;
 
 private:
   void init_process();

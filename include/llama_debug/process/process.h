@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "llama_debug/process/memory.h"
 #include "llama_debug/process/types.h"
 #include "llama_debug/process/pipe.h"
 
@@ -20,6 +21,7 @@ public:
   virtual void close() = 0;
   virtual void kill(uint32_t exit_code) = 0;
   virtual bool is_active() = 0;
+  virtual mapped_regions_t mapped_regions() = 0;
 
   pipe &std_out();
   pipe &std_in();

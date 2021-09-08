@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <psapi.h>
 
 #include "llama_debug/process/platform/windows/win_process.h"
 #include "llama_debug/process/platform/windows/win_pipe.h"
@@ -81,6 +82,32 @@ bool win_process::is_active()
     return true;
   }
   return false;
+}
+
+mapped_regions_t win_process::mapped_regions()
+{
+  mapped_regions_t ret;
+
+  uint8_t *p = nullptr;
+  MEMORY_BASIC_INFORMATION info;
+
+  for (p = nullptr;
+       VirtualQueryEx(m_proc_handle, p, &info, sizeof(info)) == sizeof(info);
+       p += info.RegionSize) {
+    std::string name;
+    if (info.Type & MEM_IMAGE) {
+      char name_buf[512];
+      GetMappedFileName(m_proc_handle, info.BaseAddress, name_buf, 512);
+      name = name_buf;
+    }
+    ret.emplace_back(mapped_region{
+      name,
+      (uintptr_t)info.BaseAddress,
+      info.RegionSize,
+      info.Protect });
+  }
+
+  return ret;
 }
 
 }// namespace llama_debug
