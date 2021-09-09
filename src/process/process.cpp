@@ -21,6 +21,15 @@ pipe &process::std_in()
   return *m_std_in;
 }
 
+uintptr_t process::base_addr()
+{
+  for (mapped_region reg : this->mapped_regions()) {
+    if (reg.mapped_file_name.find(this->m_name) != std::string::npos) {
+      return reg.base_addr;
+    }
+  }
+  return 0;
+}
 
 std::unique_ptr<process> process::create_process(const std::string &name, const std::string &args)
 {

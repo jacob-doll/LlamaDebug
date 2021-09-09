@@ -16,6 +16,10 @@ public:
   virtual void kill(uint32_t exit_code) override;
   virtual bool is_active() override;
   virtual mapped_regions_t mapped_regions() override;
+  virtual size_t read_memory(
+    const uintptr_t addr,
+    uint8_t *buffer,
+    size_t size) override;
 
 private:
   void init_process();

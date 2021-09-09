@@ -110,4 +110,14 @@ mapped_regions_t win_process::mapped_regions()
   return ret;
 }
 
+size_t win_process::read_memory(
+  const uintptr_t addr,
+  uint8_t *buffer,
+  size_t size)
+{
+  size_t bytes_read;
+  ReadProcessMemory(m_proc_handle, (LPCVOID)addr, buffer, size, &bytes_read);
+  return bytes_read;
+}
+
 }// namespace llama_debug

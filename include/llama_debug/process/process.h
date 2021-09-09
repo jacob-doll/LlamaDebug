@@ -22,9 +22,21 @@ public:
   virtual void kill(uint32_t exit_code) = 0;
   virtual bool is_active() = 0;
   virtual mapped_regions_t mapped_regions() = 0;
+  virtual size_t read_memory(
+    const uintptr_t addr,
+    uint8_t *buffer,
+    size_t size) = 0;
+
+  template<typename T>
+  size_t read_memory(const uintptr_t addr, T &value)
+  {
+    return read_memory(addr, (uint8_t *)(&value), sizeof(value));
+  }
 
   pipe &std_out();
   pipe &std_in();
+
+  uintptr_t base_addr();
 
 protected:
   process(const std::string &name, const std::string &args);
