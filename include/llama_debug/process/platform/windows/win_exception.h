@@ -2,6 +2,7 @@
 #define LLAMADEBUG_WIN_EXCEPTION_H
 
 #include <exception>
+#include <cstdint>
 
 namespace llama_debug {
 
