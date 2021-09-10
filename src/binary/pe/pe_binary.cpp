@@ -32,11 +32,11 @@ bool pe_binary::validate(const uint8_t *buffer, const uint32_t size)
 
 uint32_t pe_binary::rva_to_physical(uint32_t rva)
 {
-  for (uint16_t i = 0; i < m_optional_header.number_of_rva_and_sizes(); i++) {
-    uint32_t section_virtual_address = m_sections.at(i)->virtual_address();
-    uint32_t section_virtual_size = m_sections.at(i)->virtual_size();
+  for (auto &sec : this->m_sections) {
+    uint32_t section_virtual_address = sec->virtual_address();
+    uint32_t section_virtual_size = sec->virtual_size();
     if (rva >= section_virtual_address && rva < section_virtual_address + section_virtual_size) {
-      return m_sections.at(i)->physical_address() + (rva - section_virtual_address);
+      return sec->physical_address() + (rva - section_virtual_address);
     }
   }
   return rva;
