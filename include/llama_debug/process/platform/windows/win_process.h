@@ -21,6 +21,8 @@ public:
     uint8_t *buffer,
     size_t size) override;
 
+  virtual std::unique_ptr<binary> carve_binary(std::string &name) override;
+
 private:
   void init_process();
 

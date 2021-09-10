@@ -20,4 +20,12 @@ std::unique_ptr<binary> parse(const uint8_t *buffer, const uint32_t size)
   return nullptr;
 }
 
+std::unique_ptr<binary> process_parse(
+  const process &proc,
+  const std::string &name,
+  uintptr_t base_addr)
+{
+  return nullptr;
+}
+
 }// namespace llama_debug

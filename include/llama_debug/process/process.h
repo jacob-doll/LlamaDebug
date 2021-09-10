@@ -11,6 +11,8 @@
 
 namespace llama_debug {
 
+class binary;
+
 class process
 {
 public:
@@ -26,6 +28,8 @@ public:
     const uintptr_t addr,
     uint8_t *buffer,
     size_t size) = 0;
+
+  virtual std::unique_ptr<binary> carve_binary(std::string &name) = 0;
 
   template<typename T>
   size_t read_memory(const uintptr_t addr, T &value)

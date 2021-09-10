@@ -5,6 +5,8 @@
 #include "llama_debug/process/platform/windows/win_pipe.h"
 #include "llama_debug/process/platform/windows/win_exception.h"
 
+#include "llama_debug/binary/parser.h"
+
 namespace llama_debug {
 
 win_process::win_process(const std::string &name, const std::string &args) : process(name, args)
@@ -118,6 +120,16 @@ size_t win_process::read_memory(
   size_t bytes_read;
   ReadProcessMemory(m_proc_handle, (LPCVOID)addr, buffer, size, &bytes_read);
   return bytes_read;
+}
+
+std::unique_ptr<binary> win_process::carve_binary(std::string &name)
+{
+  for (mapped_region reg : this->mapped_regions()) {
+    if (reg.mapped_file_name.find(name) != std::string::npos) {
+      return process_parse(*this, name, reg.base_addr);
+    }
+  }
+  return nullptr;
 }
 
 }// namespace llama_debug
