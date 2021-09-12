@@ -15,10 +15,12 @@
 
 namespace llama_debug {
 class pe_parser;
+class pe_process_parser;
 
 class pe_binary : public binary
 {
   friend class pe_parser;
+  friend class pe_process_parser;
 
 public:
   using import_directories_t = std::vector<pe_import_directory>;

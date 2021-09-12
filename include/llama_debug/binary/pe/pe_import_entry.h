@@ -8,7 +8,7 @@ namespace llama_debug {
 struct raw_hint_name
 {
   uint16_t hint;
-  char name[];
+  char name[1];
 };
 
 class pe_import_entry : public symbol
@@ -17,6 +17,12 @@ public:
   pe_import_entry();
   pe_import_entry(const std::string &lib,
     const raw_hint_name *data,
+    uintptr_t address,
+    uint64_t name_rva,
+    uint64_t address_rva);
+  pe_import_entry(const std::string &lib,
+    uint16_t hint,
+    const std::string &name,
     uintptr_t address,
     uint64_t name_rva,
     uint64_t address_rva);

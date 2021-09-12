@@ -31,6 +31,11 @@ uintptr_t process::base_addr()
   return 0;
 }
 
+std::string &process::name()
+{
+  return m_name;
+}
+
 std::unique_ptr<process> process::create_process(const std::string &name, const std::string &args)
 {
 #ifdef _WIN32

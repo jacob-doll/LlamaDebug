@@ -41,6 +41,7 @@ public:
   pipe &std_in();
 
   uintptr_t base_addr();
+  std::string &name();
 
 protected:
   process(const std::string &name, const std::string &args);

@@ -123,9 +123,9 @@ std::ostream &operator<<(std::ostream &os, const pe_resource_directory &director
     os << "ID: " << resource_entry.id() << "\n";
     os << "Offset to data: " << resource_entry.offset_to_directory() << "\n";
     if (resource_entry.directory()) {
-      os << *resource_entry.directory();
+      os << *resource_entry.directory() << "\n";
     } else {
-      os << *resource_entry.data_entry();
+      os << *resource_entry.data_entry() << "\n";
     }
   }
 

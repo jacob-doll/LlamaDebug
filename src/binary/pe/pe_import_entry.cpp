@@ -26,6 +26,20 @@ pe_import_entry::pe_import_entry(const std::string &lib,
     m_address_rva{ address_rva }
 {}
 
+pe_import_entry::pe_import_entry(const std::string &lib,
+  uint16_t hint,
+  const std::string &name,
+  uintptr_t address,
+  uint64_t name_rva,
+  uint64_t address_rva)
+  : m_lib{ lib },
+    m_name{ name },
+    m_address{ address },
+    m_hint{ hint },
+    m_name_rva{ name_rva },
+    m_address_rva{ address_rva }
+{}
+
 std::string &pe_import_entry::lib()
 {
   return m_lib;

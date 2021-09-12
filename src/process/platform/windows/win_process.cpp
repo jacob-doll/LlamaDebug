@@ -5,7 +5,7 @@
 #include "llama_debug/process/platform/windows/win_pipe.h"
 #include "llama_debug/process/platform/windows/win_exception.h"
 
-#include "llama_debug/binary/parser.h"
+#include "llama_debug/binary/pe/pe_process_parser.h"
 
 namespace llama_debug {
 
@@ -126,7 +126,7 @@ std::unique_ptr<binary> win_process::carve_binary(std::string &name)
 {
   for (mapped_region reg : this->mapped_regions()) {
     if (reg.mapped_file_name.find(name) != std::string::npos) {
-      return process_parse(*this, name, reg.base_addr);
+      return pe_process_parser::process_parse(*this, name, reg.base_addr);
     }
   }
   return nullptr;

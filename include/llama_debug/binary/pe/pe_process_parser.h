@@ -17,12 +17,12 @@ class pe_process_parser
 {
 public:
   static std::unique_ptr<binary> process_parse(
-    const process &proc,
+    process &proc,
     const std::string &name,
     uintptr_t base_addr);
 
 private:
-  pe_process_parser(const process &proc,
+  pe_process_parser(process &proc,
     const std::string &name,
     uintptr_t base_addr);
 
@@ -36,11 +36,15 @@ private:
   void parse_imports();
   void parse_resources();
 
-  std::unique_ptr<pe_resource_directory> parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset);
-  std::unique_ptr<pe_resource_data_entry> parse_resource_data_entry(const uint32_t resource_dir_ptr, const uint32_t offset);
+  std::unique_ptr<pe_resource_directory> parse_resource_directory(
+    const uintptr_t resource_dir_ptr,
+    const uint32_t offset);
+  std::unique_ptr<pe_resource_data_entry> parse_resource_data_entry(
+    const uintptr_t resource_dir_ptr,
+    const uint32_t offset);
 
 private:
-  const process *m_proc;
+  process *m_proc;
   uintptr_t m_base_addr;
   pe_binary *m_binary;
 };

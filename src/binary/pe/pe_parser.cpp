@@ -2,6 +2,8 @@
 #include "llama_debug/binary/pe/pe_binary.h"
 #include "llama_debug/binary/pe/pe_resource_data_entry.h"
 
+#include <cstdio>
+
 namespace llama_debug {
 
 std::unique_ptr<binary> pe_parser::parse(const uint8_t *buffer, const uint32_t size)
@@ -82,7 +84,13 @@ void pe_parser::parse_sections(const uint32_t offset)
 
 void pe_parser::parse_exports()
 {
-  const data_directory export_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+  const data_directory export_directory =
+    m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+
+  if (export_directory.size == 0) {
+    return;
+  }
+
   uint32_t offset = m_binary->rva_to_physical(export_directory.virtual_address);
 
   raw_export_directory *export_directory_ = (raw_export_directory *)(m_buffer + offset);
@@ -108,11 +116,14 @@ void pe_parser::parse_exports()
     char *name = (char *)(m_buffer + name_offset);
 
     raw_export_address addr = address_table[i];
-    const data_directory export_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+    const data_directory export_directory =
+      m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_EXPORT);
+    std::string forwarder_name;
     if (addr.forwarder_rva < export_directory.virtual_address
         || addr.forwarder_rva >= export_directory.virtual_address + export_directory.size) {
       name_offset = m_binary->rva_to_physical(addr.forwarder_rva);
-      char *forwarder_name = (char *)(m_buffer + name_offset);
+      char *forwarder_name_ = (char *)(m_buffer + name_offset);
+      forwarder_name = forwarder_name_;
     }
 
     auto entry = std::make_shared<pe_export_entry>(
@@ -120,7 +131,7 @@ void pe_parser::parse_exports()
       std::string{ name },
       addr.export_rva + m_binary->m_base_addr,
       addr,
-      std::string{},
+      forwarder_name,
       name_rva,
       ordinal);
 
@@ -131,7 +142,13 @@ void pe_parser::parse_exports()
 
 void pe_parser::parse_imports()
 {
-  const data_directory import_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_IMPORT);
+  const data_directory import_directory =
+    m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_IMPORT);
+
+  if (import_directory.size == 0) {
+    return;
+  }
+
   uint32_t offset = m_binary->rva_to_physical(import_directory.virtual_address);
 
   while (true) {
@@ -177,7 +194,13 @@ void pe_parser::parse_imports()
 
 void pe_parser::parse_resources()
 {
-  const data_directory resource_directory = m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
+  const data_directory resource_directory =
+    m_binary->m_optional_header.data_directories().at(IMAGE_DIRECTORY_ENTRY_RESOURCE);
+
+  if (resource_directory.size == 0) {
+    return;
+  }
+
   const uint32_t resource_dir_ptr = m_binary->rva_to_physical(resource_directory.virtual_address);
   m_binary->m_resource_root = parse_resource_directory(resource_dir_ptr, 0);
 }
@@ -198,10 +221,12 @@ std::unique_ptr<pe_resource_directory> pe_parser::parse_resource_directory(
 
     if (entry.is_directory_offset()) {
       uint32_t dir_offset = entry.offset_to_directory() & 0x7FFFFFFF;
-      std::shared_ptr<pe_resource_directory> dir = this->parse_resource_directory(resource_dir_ptr, dir_offset);
+      std::shared_ptr<pe_resource_directory> dir =
+        this->parse_resource_directory(resource_dir_ptr, dir_offset);
       entry.directory(dir);
     } else {
-      std::shared_ptr<pe_resource_data_entry> data = this->parse_resource_data_entry(resource_dir_ptr, entry.offset_to_data());
+      std::shared_ptr<pe_resource_data_entry> data =
+        this->parse_resource_data_entry(resource_dir_ptr, entry.offset_to_data());
       entry.data_entry(data);
     }
 

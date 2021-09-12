@@ -89,9 +89,11 @@ std::ostream &pe_binary::print(std::ostream &os) const
     os << import_dir << "\n";
   }
 
-  os << std::setfill('-') << std::setw(96) << "\n";
-  os << "RESOURCES\n";
-  os << *m_resource_root << "\n";
+  if (m_resource_root) {
+    os << std::setfill('-') << std::setw(96) << "\n";
+    os << "RESOURCES\n";
+    os << *m_resource_root << "\n";
+  }
 
   os.flags(old_settings);
   return os;
