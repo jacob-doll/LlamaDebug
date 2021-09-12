@@ -182,7 +182,9 @@ void pe_parser::parse_resources()
   m_binary->m_resource_root = parse_resource_directory(resource_dir_ptr, 0);
 }
 
-std::unique_ptr<pe_resource_directory> pe_parser::parse_resource_directory(const uint32_t resource_dir_ptr, const uint32_t offset)
+std::unique_ptr<pe_resource_directory> pe_parser::parse_resource_directory(
+  const uint32_t resource_dir_ptr,
+  const uint32_t offset)
 {
   uint32_t index = resource_dir_ptr + offset;
   raw_resource_directory *root_ = (raw_resource_directory *)(m_buffer + index);
@@ -209,7 +211,9 @@ std::unique_ptr<pe_resource_directory> pe_parser::parse_resource_directory(const
   return ret;
 }
 
-std::unique_ptr<pe_resource_data_entry> pe_parser::parse_resource_data_entry(const uint32_t resource_dir_ptr, const uint32_t offset)
+std::unique_ptr<pe_resource_data_entry> pe_parser::parse_resource_data_entry(
+  const uint32_t resource_dir_ptr,
+  const uint32_t offset)
 {
   uint32_t index = resource_dir_ptr + offset;
   raw_resource_data_entry *data_entry_ = (raw_resource_data_entry *)(m_buffer + index);
