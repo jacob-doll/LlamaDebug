@@ -20,6 +20,8 @@ public:
     const std::string &name,
     const std::string &args);
 
+  static std::vector<ldpid_t> enum_processes();
+
   virtual void close() = 0;
   virtual void kill(uint32_t exit_code) = 0;
   virtual bool is_active() = 0;
@@ -45,6 +47,7 @@ public:
 
 protected:
   process(const std::string &name, const std::string &args);
+  process(const ldpid_t pid);
 
 protected:
   std::string m_name;

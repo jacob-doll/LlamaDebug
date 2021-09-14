@@ -11,6 +11,10 @@ process::process(const std::string &name, const std::string &args)
   m_std_in = pipe::create_pipe();
 }
 
+process::process(const ldpid_t pid)
+  : m_pid(pid)
+{}
+
 pipe &process::std_out()
 {
   return *m_std_out;
@@ -42,6 +46,15 @@ std::unique_ptr<process> process::create_process(const std::string &name, const 
   return std::make_unique<win_process>(name, args);
 #else// _WIN32
   return nullptr;
+#endif
+}
+
+std::vector<ldpid_t> process::enum_processes()
+{
+#ifdef _WIN32
+  return std::move(win_process::enum_processes());
+#else// _WIN32
+  return std::vector<ldpid_t>();
 #endif
 }
 

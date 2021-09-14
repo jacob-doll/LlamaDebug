@@ -10,21 +10,9 @@ int main()
   using namespace llama_debug;
   std::cout << "Creating Process!\n";
   try {
-    auto proc = process::create_process("cmd.exe", "");
-
-    // uintptr_t base_addr = proc->base_addr();
-    // raw_dos_header dos_header_{};
-    // proc->read_memory(base_addr, dos_header_);
-    // pe_dos_header dos_header{ &dos_header_ };
-    // std::cout << dos_header << "\n";
-
-    std::cout << "Parsing process!\n";
-    auto binary = proc->carve_binary(proc->name());
-    if (binary) {
-      std::cout << *binary << "\n";
+    for (ldpid_t pid : process::enum_processes()) {
+      std::cout << "PID: " << pid << "\n";
     }
-
-    proc->close();
   } catch (std::exception &e) {
     std::cout << e.what() << "\n";
   }

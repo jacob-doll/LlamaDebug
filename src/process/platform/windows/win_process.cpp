@@ -9,10 +9,15 @@
 
 namespace llama_debug {
 
-win_process::win_process(const std::string &name, const std::string &args) : process(name, args)
+win_process::win_process(const std::string &name, const std::string &args)
+  : process(name, args)
 {
   init_process();
 }
+
+win_process::win_process(const ldpid_t pid)
+  : process(pid)
+{}
 
 void win_process::init_process()
 {
@@ -66,8 +71,12 @@ void win_process::close()
   if (!this->is_active()) {
     this->kill(9);
   }
-  CloseHandle(m_proc_handle);
-  CloseHandle(m_thread_handle);
+  if (m_proc_handle) {
+    CloseHandle(m_proc_handle);
+  }
+  if (m_thread_handle) {
+    CloseHandle(m_thread_handle);
+  }
 }
 
 void win_process::kill(uint32_t exit_code)
@@ -130,6 +139,25 @@ std::unique_ptr<binary> win_process::carve_binary(std::string &name)
     }
   }
   return nullptr;
+}
+
+std::vector<ldpid_t> win_process::enum_processes()
+{
+  DWORD aProcesses[1024], cbNeeded, cProcesses;
+  std::vector<ldpid_t> ret;
+  if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded)) {
+    throw win_exception(GetLastError());
+  }
+
+  cProcesses = cbNeeded / sizeof(DWORD);
+
+  for (DWORD i = 0; i < cProcesses; i++) {
+    if (aProcesses[i] != 0) {
+      ret.emplace_back(i);
+    }
+  }
+
+  return ret;
 }
 
 }// namespace llama_debug

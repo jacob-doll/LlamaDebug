@@ -10,7 +10,10 @@ class win_process : public process
 public:
   typedef void *HANDLE;
 
+  static std::vector<ldpid_t> enum_processes();
+
   win_process(const std::string &name, const std::string &args);
+  win_process(const ldpid_t pid);
 
   virtual void close() override;
   virtual void kill(uint32_t exit_code) override;
